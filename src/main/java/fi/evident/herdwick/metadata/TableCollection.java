@@ -25,53 +25,32 @@ package fi.evident.herdwick.metadata;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public final class Name {
+import java.util.ArrayList;
+import java.util.List;
 
-    @Nullable
-    private final String schema;
-
-    @NotNull
-    private final String name;
-
-    public Name(@Nullable String schema, @NotNull String name) {
-        this.schema = schema;
-        this.name = name;
-    }
-
-    @Nullable
-    public String getSchema() {
-        return schema;
-    }
+/**
+ * Represents all the tables we are interested in. This is not necessarily a single schema,
+ * since we could have tables from multiple schemas or we could have just a subset of tables
+ * in a schema.
+ */
+public final class TableCollection {
 
     @NotNull
-    public String getName() {
-        return name;
+    private final List<Table> tables = new ArrayList<Table>();
+
+    @Nullable
+    public Table getTable(@NotNull Name name) {
+        for (Table table : tables)
+            if (name.equals(table.getName()))
+                return table;
+
+        return null;
     }
 
-    @Override
-    public String toString() {
-        if (schema != null)
-            return schema + '.' + name;
-        else
-            return name;
-    }
+    public void addTable(@NotNull Table table) {
+        if (getTable(table.getName()) != null)
+            throw new IllegalStateException("table " + table.getName() + " already exists in the collection.");
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-
-        if (o instanceof Name) {
-            Name rhs = (Name) o;
-
-            return name.equals(rhs.name)
-                && (schema != null ? schema.equals(rhs.schema) : rhs.schema == null);
-        }
-
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return 31 * (schema != null ? schema.hashCode() : 0) + name.hashCode();
+        tables.add(table);
     }
 }

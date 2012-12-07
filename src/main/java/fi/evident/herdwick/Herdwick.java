@@ -28,13 +28,11 @@ import fi.evident.dalesbred.TransactionContext;
 import fi.evident.herdwick.dialects.DefaultDialect;
 import fi.evident.herdwick.dialects.Dialect;
 import fi.evident.herdwick.generators.DataGenerator;
-import fi.evident.herdwick.metadata.Column;
-import fi.evident.herdwick.metadata.JdbcMetadataProvider;
-import fi.evident.herdwick.metadata.MetadataProvider;
-import fi.evident.herdwick.metadata.Name;
+import fi.evident.herdwick.metadata.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,6 +53,9 @@ public final class Herdwick {
     @NotNull
     private final Dialect dialect = new DefaultDialect();
 
+    @NotNull
+    private final TableCollection tables = new TableCollection();
+
     public Herdwick(@NotNull Database db) {
         this.db = db;
     }
@@ -68,13 +69,23 @@ public final class Herdwick {
             @Override
             @Nullable
             public Void execute(@NotNull TransactionContext tx) throws SQLException {
-                List<Column> columns = metadataProvider.getTable(tx.getConnection(), table).getNonAutoIncrementColumns();
+                List<Column> columns = getTable(tx.getConnection(), table).getNonAutoIncrementColumns();
 
                 db.updateBatch(dialect.createInsert(table, columns), createDataToInsert(columns, count));
 
                 return null;
             }
         });
+    }
+
+    @NotNull
+    private Table getTable(@NotNull Connection connection, @NotNull Name name) throws SQLException {
+        Table table = tables.getTable(name);
+        if (table == null) {
+            table = metadataProvider.getTable(connection, name);
+            tables.addTable(table);
+        }
+        return table;
     }
 
     @NotNull
