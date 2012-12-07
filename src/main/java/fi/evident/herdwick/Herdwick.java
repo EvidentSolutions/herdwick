@@ -32,7 +32,6 @@ import fi.evident.herdwick.metadata.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +43,9 @@ public final class Herdwick {
     @NotNull
     private final Database db;
 
+    @Nullable
+    private final String defaultSchema;
+
     @NotNull
     private final DataGenerator dataGenerator = new DataGenerator();
 
@@ -54,38 +56,35 @@ public final class Herdwick {
     private final Dialect dialect = new DefaultDialect();
 
     @NotNull
-    private final TableCollection tables = new TableCollection();
+    private final TableCollection tables;
 
     public Herdwick(@NotNull Database db) {
+        this(db, "public");
+    }
+
+    public Herdwick(@NotNull Database db, @Nullable String defaultSchema) {
         this.db = db;
-    }
-
-    public void populate(@NotNull String table, int count) {
-        populate(new Name(null, table), count);
-    }
-
-    public void populate(@NotNull final Name table, final int count) {
-        db.withTransaction(new TransactionCallback<Void>() {
+        this.defaultSchema = defaultSchema;
+        this.tables = db.withTransaction(new TransactionCallback<TableCollection>() {
             @Override
-            @Nullable
-            public Void execute(@NotNull TransactionContext tx) throws SQLException {
-                List<Column> columns = getTable(tx.getConnection(), table).getNonAutoIncrementColumns();
-
-                db.updateBatch(dialect.createInsert(table, columns), createDataToInsert(columns, count));
-
-                return null;
+            public TableCollection execute(@NotNull TransactionContext tx) throws SQLException {
+                return metadataProvider.loadTables(tx.getConnection());
             }
         });
     }
 
-    @NotNull
-    private Table getTable(@NotNull Connection connection, @NotNull Name name) throws SQLException {
-        Table table = tables.getTable(name);
-        if (table == null) {
-            table = metadataProvider.getTable(connection, name);
-            tables.addTable(table);
-        }
-        return table;
+    public void populate(@NotNull String table, int count) {
+        populate(defaultSchema, table, count);
+    }
+
+    public void populate(@Nullable String schema, @NotNull String table, int count) {
+        populate(new Name(schema, table), count);
+    }
+
+    public void populate(@NotNull Name table, int count) {
+        List<Column> columns = tables.getTable(table).getNonAutoIncrementColumns();
+
+        db.updateBatch(dialect.createInsert(table, columns), createDataToInsert(columns, count));
     }
 
     @NotNull

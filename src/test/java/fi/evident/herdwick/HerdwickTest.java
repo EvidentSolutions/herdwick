@@ -35,7 +35,6 @@ import static org.junit.Assert.assertThat;
 public class HerdwickTest {
 
     private final Database db = TestDatabaseProvider.databaseForProperties("postgresql-connection.properties");
-    private final Herdwick herdwick = new Herdwick(db);
 
     @Rule
     public final TransactionalTests transactionalTests = new TransactionalTests(db);
@@ -45,6 +44,7 @@ public class HerdwickTest {
         db.update("drop table if exists foo");
         db.update("create table foo (name varchar(10) primary key)");
 
+        Herdwick herdwick = new Herdwick(db);
         herdwick.populate("foo", 50);
 
         assertThat(db.findUniqueInt("select count(*) from foo"), is(50));
@@ -55,6 +55,7 @@ public class HerdwickTest {
         db.update("drop table if exists foo");
         db.update("create table foo (name varchar(10) primary key, description varchar(20) not null, counter int not null)");
 
+        Herdwick herdwick = new Herdwick(db);
         herdwick.populate("foo", 50);
 
         assertThat(db.findUniqueInt("select count(*) from foo"), is(50));
@@ -65,6 +66,7 @@ public class HerdwickTest {
         db.update("drop table if exists foo");
         db.update("create table foo (id serial primary key, name varchar(10) not null unique)");
 
+        Herdwick herdwick = new Herdwick(db);
         herdwick.populate("foo", 50);
 
         assertThat(db.findUniqueInt("select count(*) from foo"), is(50));
@@ -75,6 +77,7 @@ public class HerdwickTest {
         db.update("drop table if exists foo");
         db.update("create table foo (id serial primary key, flag boolean not null)");
 
+        Herdwick herdwick = new Herdwick(db);
         herdwick.populate("foo", 50);
 
         assertThat(db.findUniqueInt("select count(*) from foo"), is(50));
@@ -88,6 +91,7 @@ public class HerdwickTest {
         db.update("create table dept (id serial primary key, name varchar(10) not null)");
         db.update("create table emp (id serial primary key, name varchar(10) not null, dept_id int references dept)");
 
+        Herdwick herdwick = new Herdwick(db);
         herdwick.populate("dept", 10);
         herdwick.populate("emp", 100);
 

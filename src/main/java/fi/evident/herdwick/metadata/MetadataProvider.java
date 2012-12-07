@@ -30,5 +30,5 @@ import java.sql.SQLException;
 public interface MetadataProvider {
 
     @NotNull
-    Table getTable(@NotNull Connection connection, @NotNull Name tableName) throws SQLException;
+    TableCollection loadTables(@NotNull Connection connection) throws SQLException;
 }

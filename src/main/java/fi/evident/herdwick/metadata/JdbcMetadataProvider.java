@@ -28,18 +28,47 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class JdbcMetadataProvider implements MetadataProvider {
 
-    @NotNull
     @Override
-    public Table getTable(@NotNull Connection connection, @NotNull Name tableName) throws SQLException {
+    @NotNull
+    public TableCollection loadTables(@NotNull Connection connection) throws SQLException {
+        DatabaseMetaData metaData = connection.getMetaData();
+        List<Name> names = loadTableNames(metaData);
+        TableCollection result = new TableCollection();
+
+        for (Name name : names)
+            result.addTable(getTable(metaData, name));
+
+        return result;
+    }
+
+    private static List<Name> loadTableNames(@NotNull DatabaseMetaData metaData) throws SQLException {
+        ResultSet rs = metaData.getTables(null, null, null, new String[] { "TABLE" });
+        try {
+            List<Name> names = new ArrayList<Name>();
+            while (rs.next()) {
+                String schema = rs.getString("TABLE_SCHEM");
+                String name = rs.getString("TABLE_NAME");
+
+                names.add(new Name(schema, name));
+            }
+            return names;
+        } finally {
+            rs.close();
+        }
+    }
+
+    @NotNull
+    private static Table getTable(@NotNull DatabaseMetaData metaData, @NotNull Name tableName) throws SQLException {
         Table table = new Table(tableName);
 
-        DatabaseMetaData databaseMetaData = connection.getMetaData();
-        loadColumns(tableName, table, databaseMetaData);
+        loadColumns(tableName, table, metaData);
 
-        updateUniqueConstraints(table, databaseMetaData);
+        updateUniqueConstraints(table, metaData);
 
         return table;
     }
