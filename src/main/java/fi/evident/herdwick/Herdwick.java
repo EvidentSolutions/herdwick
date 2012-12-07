@@ -23,160 +23,78 @@
 package fi.evident.herdwick;
 
 import fi.evident.dalesbred.Database;
+import fi.evident.dalesbred.SQL;
 import fi.evident.dalesbred.TransactionCallback;
 import fi.evident.dalesbred.TransactionContext;
-import fi.evident.dalesbred.query.QueryBuilder;
+import fi.evident.herdwick.dialects.DefaultDialect;
+import fi.evident.herdwick.dialects.Dialect;
+import fi.evident.herdwick.generators.DataGenerator;
+import fi.evident.herdwick.metadata.Column;
+import fi.evident.herdwick.metadata.JdbcMetadataProvider;
+import fi.evident.herdwick.metadata.MetadataProvider;
+import fi.evident.herdwick.metadata.Name;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.sql.*;
-import java.util.*;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
-import static java.lang.Math.min;
+import static fi.evident.dalesbred.SqlQuery.query;
 
 public final class Herdwick {
 
     @NotNull
     private final Database db;
 
-    private final Map<ColumnMetadata,Set<Object>> generatedValues = new HashMap<ColumnMetadata, Set<Object>>();
+    @NotNull
+    private final DataGenerator dataGenerator = new DataGenerator();
+
+    @NotNull
+    private final MetadataProvider metadataProvider = new JdbcMetadataProvider();
+
+    @NotNull
+    private final Dialect dialect = new DefaultDialect();
 
     public Herdwick(@NotNull Database db) {
         this.db = db;
     }
 
-    private final Random random = new Random();
+    public void populate(@NotNull String table, int count) {
+        populate(new Name(null, table), count);
+    }
 
-    public void populate(@NotNull final String table, final int count) {
+    public void populate(@NotNull final Name table, final int count) {
         db.withTransaction(new TransactionCallback<Void>() {
             @Override
             @Nullable
             public Void execute(@NotNull TransactionContext tx) throws SQLException {
-                Connection connection = tx.getConnection();
-                DatabaseMetaData databaseMetaData = connection.getMetaData();
-                List<ColumnMetadata> columns = getColumns(databaseMetaData, table);
+                List<Column> columns = metadataProvider.getTable(tx.getConnection(), table).getNonAutoIncrementColumns();
 
-                for (int i = 0; i < count; i++)
-                    insert(table, columns);
+                insert(table, columns, createDataToInsert(columns, count));
 
                 return null;
             }
         });
     }
 
-    private void insert(@NotNull String table, @NotNull List<ColumnMetadata> columns) {
-        QueryBuilder qb = new QueryBuilder("insert into ").append(table).append(" (");
-
-        for (Iterator<ColumnMetadata> it = columns.iterator(); it.hasNext(); ) {
-            ColumnMetadata column = it.next();
-            qb.append(column.name);
-            if (it.hasNext())
-                qb.append(",");
+    private List<List<Object>> createDataToInsert(List<Column> columns, int count) {
+        List<List<Object>> rows = new ArrayList<List<Object>>(count);
+        for (int i = 0; i < count; i++) {
+            List<Object> values = new ArrayList<Object>(columns.size());
+            for (Column column : columns)
+                values.add(dataGenerator.distinctRandomValue(column));
+            rows.add(values);
         }
-        qb.append(") values (");
-
-        for (Iterator<ColumnMetadata> it = columns.iterator(); it.hasNext(); ) {
-            ColumnMetadata column = it.next();
-
-            qb.append("?", distinctRandomValue(column));
-            if (it.hasNext())
-                qb.append(",");
-        }
-        qb.append(")");
-        db.update(qb.build());
+        return rows;
     }
 
-    @Nullable
-    private Object distinctRandomValue(@NotNull ColumnMetadata columnMetadata) {
-        int retries = 10;
+    private void insert(@NotNull Name table, @NotNull List<Column> columns, List<List<Object>> values) {
+        @SQL
+        String sql = dialect.createInsert(table, columns);
 
-        for (int i = 0; i < retries; i++) {
-            Object value = randomValue(columnMetadata);
-
-            if (getGeneratedValuesForColumn(columnMetadata).add(value)) {
-                return value;
-            }
-        }
-
-        throw new RuntimeException("tried " + retries + " times but couldn't come up with unique random value for " + columnMetadata.name);
-    }
-
-    @NotNull
-    private Set<Object> getGeneratedValuesForColumn(@NotNull ColumnMetadata columnMetadata) {
-        Set<Object> values = generatedValues.get(columnMetadata);
-        if (values == null) {
-            values = new HashSet<Object>();
-            generatedValues.put(columnMetadata, values);
-        }
-        return values;
-    }
-
-    @Nullable
-    private Object randomValue(@NotNull ColumnMetadata column) {
-        switch (column.dataType) {
-        case Types.VARCHAR:
-            return randomString(min(column.size, 10000));
-        case Types.INTEGER:
-            return random.nextInt();
-        default:
-            throw new IllegalArgumentException("unknown sql-type: " + column.dataType + " (" + column.typeName + ')');
-        }
-    }
-
-    private String randomString(int size) {
-        int length = random.nextInt(size);
-
-        StringBuilder sb = new StringBuilder(length);
-
-        String alphabet = "abcdefghijklmnopqrstuvwxyz0123456789-_ ";
-
-        for (int i = 0; i < length; i++)
-            sb.append(alphabet.charAt(random.nextInt(alphabet.length())));
-
-        return sb.toString();
-    }
-
-    @NotNull
-    private static List<ColumnMetadata> getColumns(@NotNull DatabaseMetaData databaseMetaData, @NotNull String table) throws SQLException {
-
-        ResultSet rs = databaseMetaData.getColumns(null, null, table, "%");
-        try {
-            List<ColumnMetadata> result = new ArrayList<ColumnMetadata>();
-
-            while (rs.next()) {
-                ColumnMetadata column = new ColumnMetadata(rs.getString("COLUMN_NAME"));
-                column.nullable = rs.getInt("NULLABLE") == DatabaseMetaData.columnNullable;
-                column.dataType = rs.getInt("DATA_TYPE");
-                column.typeName = rs.getString("TYPE_NAME");
-                column.autoIncrement = "YES".equals(rs.getString("IS_AUTOINCREMENT"));
-                column.size = rs.getInt("COLUMN_SIZE");
-
-                if (!column.autoIncrement)
-                    result.add(column);
-            }
-
-            return result;
-
-        } finally {
-            rs.close();
-        }
-    }
-
-    private static class ColumnMetadata {
-        final String name;
-        boolean nullable;
-        int dataType;
-        boolean autoIncrement;
-        String typeName;
-        int size;
-
-        public ColumnMetadata(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String toString() {
-            return "[name=" + name + ", nullable=" + nullable + ", typeName=" + typeName + ", dataType=" + dataType + ", size=" + size + ", autoIncrement=" + autoIncrement + ']';
-        }
+        // TODO: update to Dalesbred that supports batch updates
+        for (List<Object> row : values)
+            db.update(query(sql, row));
     }
 }
