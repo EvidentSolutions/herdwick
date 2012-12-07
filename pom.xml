@@ -9,7 +9,7 @@
     <version>0.1-SNAPSHOT</version>
 
     <properties>
-        <dalesbred.version>0.3.0</dalesbred.version>
+        <dalesbred.version>0.3.1</dalesbred.version>
     </properties>
 
     <dependencies>
@@ -17,6 +17,12 @@
             <groupId>fi.evident.dalesbred</groupId>
             <artifactId>dalesbred</artifactId>
             <version>${dalesbred.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.intellij</groupId>
+            <artifactId>annotations</artifactId>
+            <version>9.0.4</version>
         </dependency>
 
         <dependency>
