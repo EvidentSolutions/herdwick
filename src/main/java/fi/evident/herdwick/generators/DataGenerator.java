@@ -27,7 +27,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.sql.Types;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Random;
 
 import static java.lang.Math.min;
 
@@ -41,32 +44,25 @@ public final class DataGenerator {
     private final Random random = new Random();
 
     @NotNull
-    private final Map<Column,Set<Object>> generatedValues = new HashMap<Column, Set<Object>>();
-
+    public List<Object> createValuesForColumn(@NotNull Column column, int count) {
+        List<Object> values = new ArrayList<Object>(count);
+        for (int i = 0; i < count; i++)
+            values.add(distinctRandomValue(column, values));
+        return values;
+    }
 
     @Nullable
-    public Object distinctRandomValue(@NotNull Column column) {
+    public Object distinctRandomValue(@NotNull Column column, Collection<?> existing) {
         int retries = 10;
 
         for (int i = 0; i < retries; i++) {
             Object value = randomValue(column);
 
-            if (getGeneratedValuesForColumn(column).add(value)) {
+            if (!existing.contains(value))
                 return value;
-            }
         }
 
         throw new RuntimeException("tried " + retries + " times but couldn't come up with unique random value for " + column.name);
-    }
-
-    @NotNull
-    private Set<Object> getGeneratedValuesForColumn(@NotNull Column column) {
-        Set<Object> values = generatedValues.get(column);
-        if (values == null) {
-            values = new HashSet<Object>();
-            generatedValues.put(column, values);
-        }
-        return values;
     }
 
     @Nullable

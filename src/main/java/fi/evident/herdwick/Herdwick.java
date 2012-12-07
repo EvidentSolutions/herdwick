@@ -39,6 +39,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static fi.evident.herdwick.utils.CollectionUtils.transposed;
+
 public final class Herdwick {
 
     @NotNull
@@ -78,13 +80,10 @@ public final class Herdwick {
     @NotNull
     private List<List<Object>> createDataToInsert(@NotNull List<Column> columns, int count) {
         List<List<Object>> rows = new ArrayList<List<Object>>(count);
-        for (int i = 0; i < count; i++) {
-            List<Object> values = new ArrayList<Object>(columns.size());
-            for (Column column : columns)
-                values.add(dataGenerator.distinctRandomValue(column));
-            rows.add(values);
-        }
-        return rows;
-    }
 
+        for (Column column : columns)
+            rows.add(dataGenerator.createValuesForColumn(column, count));
+
+        return transposed(rows);
+    }
 }
