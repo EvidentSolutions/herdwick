@@ -23,7 +23,6 @@
 package fi.evident.herdwick;
 
 import fi.evident.dalesbred.Database;
-import fi.evident.dalesbred.SQL;
 import fi.evident.dalesbred.TransactionCallback;
 import fi.evident.dalesbred.TransactionContext;
 import fi.evident.herdwick.dialects.DefaultDialect;
@@ -39,8 +38,6 @@ import org.jetbrains.annotations.Nullable;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static fi.evident.dalesbred.SqlQuery.query;
 
 public final class Herdwick {
 
@@ -71,14 +68,15 @@ public final class Herdwick {
             public Void execute(@NotNull TransactionContext tx) throws SQLException {
                 List<Column> columns = metadataProvider.getTable(tx.getConnection(), table).getNonAutoIncrementColumns();
 
-                insert(table, columns, createDataToInsert(columns, count));
+                db.updateBatch(dialect.createInsert(table, columns), createDataToInsert(columns, count));
 
                 return null;
             }
         });
     }
 
-    private List<List<Object>> createDataToInsert(List<Column> columns, int count) {
+    @NotNull
+    private List<List<Object>> createDataToInsert(@NotNull List<Column> columns, int count) {
         List<List<Object>> rows = new ArrayList<List<Object>>(count);
         for (int i = 0; i < count; i++) {
             List<Object> values = new ArrayList<Object>(columns.size());
@@ -89,12 +87,4 @@ public final class Herdwick {
         return rows;
     }
 
-    private void insert(@NotNull Name table, @NotNull List<Column> columns, List<List<Object>> values) {
-        @SQL
-        String sql = dialect.createInsert(table, columns);
-
-        // TODO: update to Dalesbred that supports batch updates
-        for (List<Object> row : values)
-            db.update(query(sql, row));
-    }
 }
