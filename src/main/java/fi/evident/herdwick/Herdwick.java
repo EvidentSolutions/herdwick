@@ -78,8 +78,8 @@ public final class Herdwick {
     }
 
     @NotNull
-    private List<List<Object>> createDataToInsert(@NotNull List<Column> columns, int count) {
-        List<List<Object>> rows = new ArrayList<List<Object>>(count);
+    private List<? extends List<?>> createDataToInsert(@NotNull List<Column> columns, int count) {
+        List<List<?>> rows = new ArrayList<List<?>>(count);
 
         for (Column column : columns)
             rows.add(dataGenerator.createValuesForColumn(column, count));

@@ -24,34 +24,42 @@ package fi.evident.herdwick.generators;
 
 import fi.evident.herdwick.metadata.Column;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.sql.Types;
-import java.util.List;
 import java.util.Random;
 
-public final class DataGenerator {
+import static java.lang.Math.min;
+
+public final class SimpleStringGenerator extends AbstractSimpleGenerator<String> {
 
     @NotNull
-    private final Random random = new Random();
+    private final Random random;
+
+    private final int maxLength;
 
     @NotNull
-    public List<?> createValuesForColumn(@NotNull Column column, int count) {
-        Generator<?> generator = generatorFor(column);
-        return generator.createValuesForColumn(count, column);
+    private final String alphabet;
+
+    SimpleStringGenerator(@NotNull Random random) {
+        this(random, 1000, "abcdefghijklmnopqrstuvwxyz0123456789-_ ");
     }
 
-    @NotNull
-    private Generator<?> generatorFor(Column column) {
-        switch (column.dataType) {
-            case Types.VARCHAR:
-                return new SimpleStringGenerator(random);
-            case Types.BOOLEAN:
-            case Types.BIT:
-                return new SimpleBooleanGenerator(random);
-            case Types.INTEGER:
-                return new SimpleIntegerGenerator(random);
-            default:
-                throw new IllegalArgumentException("unknown sql-type: " + column.dataType + " (" + column.typeName + ')');
-        }
+    SimpleStringGenerator(@NotNull Random random, int maxLength, @NotNull String alphabet) {
+        this.random = random;
+        this.maxLength = maxLength;
+        this.alphabet = alphabet;
+    }
+
+    @Nullable
+    @Override
+    protected String randomValue(@NotNull Column column) {
+        int length = random.nextInt(min(column.size, maxLength));
+
+        StringBuilder sb = new StringBuilder(length);
+
+        for (int i = 0; i < length; i++)
+            sb.append(alphabet.charAt(random.nextInt(alphabet.length())));
+
+        return sb.toString();
     }
 }

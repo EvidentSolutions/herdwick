@@ -25,33 +25,10 @@ package fi.evident.herdwick.generators;
 import fi.evident.herdwick.metadata.Column;
 import org.jetbrains.annotations.NotNull;
 
-import java.sql.Types;
 import java.util.List;
-import java.util.Random;
 
-public final class DataGenerator {
-
-    @NotNull
-    private final Random random = new Random();
+public interface Generator<T> {
 
     @NotNull
-    public List<?> createValuesForColumn(@NotNull Column column, int count) {
-        Generator<?> generator = generatorFor(column);
-        return generator.createValuesForColumn(count, column);
-    }
-
-    @NotNull
-    private Generator<?> generatorFor(Column column) {
-        switch (column.dataType) {
-            case Types.VARCHAR:
-                return new SimpleStringGenerator(random);
-            case Types.BOOLEAN:
-            case Types.BIT:
-                return new SimpleBooleanGenerator(random);
-            case Types.INTEGER:
-                return new SimpleIntegerGenerator(random);
-            default:
-                throw new IllegalArgumentException("unknown sql-type: " + column.dataType + " (" + column.typeName + ')');
-        }
-    }
+    List<T> createValuesForColumn(int count, @NotNull Column column);
 }

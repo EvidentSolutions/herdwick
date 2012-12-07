@@ -34,7 +34,7 @@ public final class CollectionUtils {
     private CollectionUtils() { }
 
     @NotNull
-    public static <T> List<List<T>> transposed(@NotNull List<List<T>> rows) {
+    public static <T> List<List<T>> transposed(@NotNull List<? extends List<? extends T>> rows) {
         if (rows.isEmpty()) return emptyList();
 
         int rowCount = rows.size();
@@ -44,7 +44,7 @@ public final class CollectionUtils {
 
         for (int i = 0; i < columnCount; i++) {
             List<T> column = new ArrayList<T>(rowCount);
-            for (List<T> row : rows)
+            for (List<? extends T> row : rows)
                 column.add(row.get(i));
             result.add(column);
         }
