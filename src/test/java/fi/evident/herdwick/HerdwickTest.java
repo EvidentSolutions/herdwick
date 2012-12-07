@@ -85,6 +85,18 @@ public class HerdwickTest {
 
     @Test
     @Ignore
+    public void multiColumnUnique() {
+        db.update("drop table if exists foo");
+        db.update("create table foo (id serial primary key, flag boolean not null, num varchar(10), unique (flag, num))");
+
+        Herdwick herdwick = new Herdwick(db);
+        herdwick.populate("foo", 50);
+
+        assertThat(db.findUniqueInt("select count(*) from foo"), is(50));
+    }
+
+    @Test
+    @Ignore
     public void populateForeignKeys() {
         db.update("drop table if exists emp");
         db.update("drop table if exists dept");
