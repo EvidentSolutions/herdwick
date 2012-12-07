@@ -37,6 +37,8 @@ public final class Column {
     public boolean autoIncrement;
     public String typeName;
     public int size;
+    public boolean unique;
+    public int decimalDigits;
 
     Column(@NotNull Table table, @NotNull String name) {
         this.table = table;

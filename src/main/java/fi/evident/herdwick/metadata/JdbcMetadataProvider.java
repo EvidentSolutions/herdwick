@@ -34,10 +34,32 @@ public final class JdbcMetadataProvider implements MetadataProvider {
     @NotNull
     @Override
     public Table getTable(@NotNull Connection connection, @NotNull Name tableName) throws SQLException {
+        Table table = new Table(tableName);
+
         DatabaseMetaData databaseMetaData = connection.getMetaData();
+        loadColumns(tableName, table, databaseMetaData);
+
+        updateUniqueConstraints(table, databaseMetaData);
+
+        return table;
+    }
+
+    private static void updateUniqueConstraints(Table table, DatabaseMetaData databaseMetaData) throws SQLException {
+        ResultSet rs = databaseMetaData.getIndexInfo(null, table.getName().getSchema(), table.getName().getName(), true, false);
+        try {
+            while (rs.next()) {
+                String columnName = rs.getString("COLUMN_NAME");
+                table.getColumn(columnName).unique = true;
+            }
+
+        } finally {
+            rs.close();
+        }
+    }
+
+    private static void loadColumns(Name tableName, Table table, DatabaseMetaData databaseMetaData) throws SQLException {
         ResultSet rs = databaseMetaData.getColumns(null, tableName.getSchema(), tableName.getName(), null);
         try {
-            Table table = new Table(tableName);
 
             while (rs.next()) {
                 Column column = table.addColumn(rs.getString("COLUMN_NAME"));
@@ -46,9 +68,8 @@ public final class JdbcMetadataProvider implements MetadataProvider {
                 column.typeName = rs.getString("TYPE_NAME");
                 column.autoIncrement = "YES".equals(rs.getString("IS_AUTOINCREMENT"));
                 column.size = rs.getInt("COLUMN_SIZE");
+                column.decimalDigits = rs.getInt("DECIMAL_DIGITS");
             }
-
-            return table;
 
         } finally {
             rs.close();

@@ -72,4 +72,13 @@ public final class Table {
         columns.add(column);
         return column;
     }
+
+    @NotNull
+    public Column getColumn(@NotNull String columnName) {
+        for (Column column : columns)
+            if (column.name.equals(columnName))
+                return column;
+
+        throw new IllegalArgumentException("no such column: '" + columnName + "' in table " + name);
+    }
 }

@@ -63,7 +63,17 @@ public class HerdwickTest {
     @Test
     public void populateTableWithAutomaticPrimaryKey() {
         db.update("drop table if exists foo");
-        db.update("create table foo (id serial primary key, name varchar(10) not null)");
+        db.update("create table foo (id serial primary key, name varchar(10) not null unique)");
+
+        herdwick.populate("foo", 50);
+
+        assertThat(db.findUniqueInt("select count(*) from foo"), is(50));
+    }
+
+    @Test
+    public void booleanColumns() {
+        db.update("drop table if exists foo");
+        db.update("create table foo (id serial primary key, flag boolean not null)");
 
         herdwick.populate("foo", 50);
 

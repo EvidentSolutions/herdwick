@@ -47,18 +47,18 @@ public final class DataGenerator {
     public List<Object> createValuesForColumn(@NotNull Column column, int count) {
         List<Object> values = new ArrayList<Object>(count);
         for (int i = 0; i < count; i++)
-            values.add(distinctRandomValue(column, values));
+            values.add(allowedRandomValue(column, values));
         return values;
     }
 
     @Nullable
-    public Object distinctRandomValue(@NotNull Column column, Collection<?> existing) {
+    public Object allowedRandomValue(@NotNull Column column, Collection<?> existing) {
         int retries = 10;
 
         for (int i = 0; i < retries; i++) {
             Object value = randomValue(column);
 
-            if (!existing.contains(value))
+            if (!column.unique || !existing.contains(value))
                 return value;
         }
 
@@ -68,6 +68,9 @@ public final class DataGenerator {
     @Nullable
     private Object randomValue(@NotNull Column column) {
         switch (column.dataType) {
+            case Types.BOOLEAN:
+            case Types.BIT:
+                return random.nextBoolean();
             case Types.VARCHAR:
                 return randomString(min(column.size, MAX_VARCHAR_LENGTH));
             case Types.INTEGER:
