@@ -1,0 +1,4 @@
+target
+*~
+.idea/workspace.xml
+src/test/resources/postgresql-connection.properties
