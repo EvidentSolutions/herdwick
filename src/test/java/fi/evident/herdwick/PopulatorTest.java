@@ -84,18 +84,6 @@ public class PopulatorTest {
     }
 
     @Test
-    @Ignore
-    public void multiColumnUnique() {
-        db.update("drop table if exists foo");
-        db.update("create table foo (id serial primary key, flag boolean not null, num varchar(10), unique (flag, num))");
-
-        Populator populator = new Populator(db);
-        populator.populate("foo", 50);
-
-        assertThat(db.findUniqueInt("select count(*) from foo"), is(50));
-    }
-
-    @Test
     public void populateForeignKeys() {
         db.update("drop table if exists emp");
         db.update("drop table if exists dept");
@@ -111,7 +99,19 @@ public class PopulatorTest {
     }
 
     @Test
-    @Ignore
+    @Ignore("this needs support for multi-column unique indices to work")
+    public void multiColumnUnique() {
+        db.update("drop table if exists foo");
+        db.update("create table foo (id serial primary key, flag boolean not null, num varchar(10), unique (flag, num))");
+
+        Populator populator = new Populator(db);
+        populator.populate("foo", 50);
+
+        assertThat(db.findUniqueInt("select count(*) from foo"), is(50));
+    }
+
+    @Test
+    @Ignore("this needs support for multi-column unique indices to work")
     public void multipleForeignKeys() {
         db.update("drop table if exists user_account_group");
         db.update("drop table if exists user_account");
