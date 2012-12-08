@@ -29,18 +29,15 @@ import fi.evident.herdwick.dialects.DefaultDialect;
 import fi.evident.herdwick.dialects.Dialect;
 import fi.evident.herdwick.dialects.JdbcMetadataProvider;
 import fi.evident.herdwick.dialects.MetadataProvider;
+import fi.evident.herdwick.generators.Batch;
 import fi.evident.herdwick.generators.DataGenerator;
-import fi.evident.herdwick.model.Column;
 import fi.evident.herdwick.model.Name;
+import fi.evident.herdwick.model.Table;
 import fi.evident.herdwick.model.TableCollection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
-import static fi.evident.herdwick.utils.CollectionUtils.transposed;
 
 public final class Populator {
 
@@ -86,19 +83,19 @@ public final class Populator {
         populate(new Name(schema, table), count);
     }
 
-    public void populate(@NotNull Name table, int count) {
-        List<Column> columns = tables.getTable(table).getNonAutoIncrementColumns();
+    public void populate(@NotNull Name tableName, int count) {
+        Batch batch = createBatch(tableName, count);
 
-        db.updateBatch(dialect.createInsert(table, columns), createDataToInsert(columns, count));
+        db.updateBatch(dialect.createInsert(batch.getTable().getName(), batch.getColumns()), batch.rowsToInsert());
     }
 
     @NotNull
-    private List<? extends List<?>> createDataToInsert(@NotNull List<Column> columns, int count) {
-        List<List<?>> rows = new ArrayList<List<?>>(count);
+    private Batch createBatch(@NotNull Name tableName, int size) {
+        Table table = tables.getTable(tableName);
+        Batch batch = new Batch(table, size);
 
-        for (Column column : columns)
-            rows.add(dataGenerator.createValuesForColumn(column, count));
+        dataGenerator.prepare(batch);
 
-        return transposed(rows);
+        return batch;
     }
 }

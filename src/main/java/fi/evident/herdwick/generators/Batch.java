@@ -22,47 +22,53 @@
 
 package fi.evident.herdwick.generators;
 
-import fi.evident.dalesbred.Database;
 import fi.evident.herdwick.model.Column;
+import fi.evident.herdwick.model.Table;
 import org.jetbrains.annotations.NotNull;
 
-import java.sql.Types;
-import java.util.Random;
+import java.util.ArrayList;
+import java.util.List;
 
-public final class DataGenerator {
+import static fi.evident.herdwick.utils.CollectionUtils.transposed;
+import static java.util.Collections.unmodifiableList;
+
+public final class Batch {
+
+    private final List<List<?>> data = new ArrayList<List<?>>();
 
     @NotNull
-    private final Database db;
+    private final Table table;
 
     @NotNull
-    private final Random random = new Random();
+    private final List<Column> columns;
+    private final int size;
 
-    public DataGenerator(@NotNull Database db) {
-        this.db = db;
+    public Batch(@NotNull Table table, int size) {
+        this.table = table;
+        this.size = size;
+        this.columns = table.getNonAutoIncrementColumns();
     }
 
-    public void prepare(@NotNull Batch batch) {
-        for (Column column : batch.getColumns()) {
-            Generator<?> generator = generatorFor(column);
-            batch.addColumnData(generator.createValuesForColumn(batch.getSize(), column));
-        }
+    @NotNull
+    public List<? extends List<?>> rowsToInsert() {
+        return transposed(data);
+    }
+
+    public void addColumnData(@NotNull List<?> valuesForColumn) {
+        data.add(valuesForColumn);
+    }
+
+    public int getSize() {
+        return size;
     }
 
     @NotNull
-    private Generator<?> generatorFor(Column column) {
-        if (column.references != null)
-            return new ReferenceGenerator(db, random);
+    public List<Column> getColumns() {
+        return unmodifiableList(columns);
+    }
 
-        switch (column.dataType) {
-            case Types.VARCHAR:
-                return new SimpleStringGenerator(random);
-            case Types.BOOLEAN:
-            case Types.BIT:
-                return new SimpleBooleanGenerator(random);
-            case Types.INTEGER:
-                return new SimpleIntegerGenerator(random);
-            default:
-                throw new IllegalArgumentException("unknown sql-type: " + column.dataType + " (" + column.typeName + ')');
-        }
+    @NotNull
+    public Table getTable() {
+        return table;
     }
 }
