@@ -25,6 +25,7 @@ package fi.evident.herdwick.model;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -32,7 +33,7 @@ import java.util.Map;
  * since we could have tables from multiple schemas or we could have just a subset of tables
  * in a schema.
  */
-public final class TableCollection {
+public final class TableCollection implements Iterable<Table> {
 
     @NotNull
     private final Map<Name,Table> tables = new HashMap<Name,Table>();
@@ -54,5 +55,11 @@ public final class TableCollection {
         Table table = new Table(name);
         tables.put(table.getName(), table);
         return table;
+    }
+
+    @Override
+    @NotNull
+    public Iterator<Table> iterator() {
+        return tables.values().iterator();
     }
 }

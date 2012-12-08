@@ -101,7 +101,7 @@ public class PopulatorTest {
         db.update("drop table if exists emp");
         db.update("drop table if exists dept");
         db.update("create table dept (id serial primary key, name varchar(10) not null)");
-        db.update("create table emp (id serial primary key, name varchar(10) not null, dept_id int references dept)");
+        db.update("create table emp (id serial primary key, name varchar(10) not null, dept_id int references dept not null)");
 
         Populator populator = new Populator(db);
         populator.populate("dept", 10);
@@ -109,5 +109,26 @@ public class PopulatorTest {
 
         assertThat(db.findUniqueInt("select count(*) from dept"), is(10));
         assertThat(db.findUniqueInt("select count(*) from emp"), is(100));
+    }
+
+    @Test
+    @Ignore
+    public void multipleForeignKeys() {
+        db.update("drop table if exists user_account_group");
+        db.update("drop table if exists user_account");
+        db.update("drop table if exists user_group");
+
+        db.update("create table user_group (id serial primary key, name varchar(10) not null)");
+        db.update("create table user_account (id serial primary key, name varchar(10) not null)");
+        db.update("create table user_account_group (account_id int references user_account, group_id int references user_group, primary key (account_id, group_id))");
+
+        Populator populator = new Populator(db);
+        populator.populate("user_account", 10);
+        populator.populate("user_group", 10);
+        populator.populate("user_account_group", 50);
+
+        assertThat(db.findUniqueInt("select count(*) from user_account"), is(10));
+        assertThat(db.findUniqueInt("select count(*) from user_group"), is(10));
+        assertThat(db.findUniqueInt("select count(*) from user_account_group"), is(50));
     }
 }

@@ -22,6 +22,7 @@
 
 package fi.evident.herdwick.generators;
 
+import fi.evident.dalesbred.Database;
 import fi.evident.herdwick.model.Column;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,7 +33,14 @@ import java.util.Random;
 public final class DataGenerator {
 
     @NotNull
+    private final Database db;
+
+    @NotNull
     private final Random random = new Random();
+
+    public DataGenerator(@NotNull Database db) {
+        this.db = db;
+    }
 
     @NotNull
     public List<?> createValuesForColumn(@NotNull Column column, int count) {
@@ -42,6 +50,9 @@ public final class DataGenerator {
 
     @NotNull
     private Generator<?> generatorFor(Column column) {
+        if (column.references != null)
+            return new ReferenceGenerator(db, random);
+
         switch (column.dataType) {
             case Types.VARCHAR:
                 return new SimpleStringGenerator(random);

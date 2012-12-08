@@ -51,7 +51,7 @@ public final class Populator {
     private final String defaultSchema;
 
     @NotNull
-    private final DataGenerator dataGenerator = new DataGenerator();
+    private final DataGenerator dataGenerator;
 
     @NotNull
     private final MetadataProvider metadataProvider = new JdbcMetadataProvider();
@@ -68,6 +68,7 @@ public final class Populator {
 
     public Populator(@NotNull Database db, @Nullable String defaultSchema) {
         this.db = db;
+        this.dataGenerator = new DataGenerator(db);
         this.defaultSchema = defaultSchema;
         this.tables = db.withTransaction(new TransactionCallback<TableCollection>() {
             @Override

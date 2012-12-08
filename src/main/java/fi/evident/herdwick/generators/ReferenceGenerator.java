@@ -20,37 +20,44 @@
  * THE SOFTWARE.
  */
 
-package fi.evident.herdwick.model;
+package fi.evident.herdwick.generators;
 
+import fi.evident.dalesbred.Database;
+import fi.evident.herdwick.model.Column;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-public final class Column {
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+public final class ReferenceGenerator implements Generator<Object> {
 
     @NotNull
-    public final Table table;
+    private final Database db;
 
     @NotNull
-    public final String name;
+    private final Random random;
 
-    public boolean nullable;
-    public int dataType;
-    public boolean autoIncrement;
-    public String typeName;
-    public int size;
-    public boolean unique;
-    public int decimalDigits;
-
-    @Nullable
-    public Column references;
-
-    Column(@NotNull Table table, @NotNull String name) {
-        this.table = table;
-        this.name = name;
+    public ReferenceGenerator(@NotNull Database db, @NotNull Random random) {
+        this.db = db;
+        this.random = random;
     }
 
+    @NotNull
     @Override
-    public String toString() {
-        return table.getName().toString() + '.' + name;
+    public List<Object> createValuesForColumn(int count, @NotNull Column column) {
+        Column referencedColumn = column.references;
+        assert referencedColumn != null;
+
+        List<Object> ids = db.findAll(Object.class, "select " + referencedColumn.name + " from " + referencedColumn.table.getName());
+        // TODO: support unique constraints
+
+        if (ids.isEmpty())
+            throw new IllegalStateException(referencedColumn + " has no values");
+
+        List<Object> values = new ArrayList<Object>(count);
+        for (int i = 0; i < count; i++)
+            values.add(ids.get(random.nextInt(ids.size())));
+        return values;
     }
 }
