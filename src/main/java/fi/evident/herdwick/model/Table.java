@@ -81,4 +81,13 @@ public final class Table {
 
         throw new IllegalArgumentException("no such column: '" + columnName + "' in table " + name);
     }
+
+    public void addUniqueConstraint(@NotNull String constraintName, @NotNull List<Column> columnsInIndex) {
+        if (columnsInIndex.isEmpty()) throw new IllegalArgumentException("empty list of columnsInIndex");
+
+        // TODO: create a proper multi-column constraint
+        for (Column column : columnsInIndex) {
+            column.unique = true;
+        }
+    }
 }

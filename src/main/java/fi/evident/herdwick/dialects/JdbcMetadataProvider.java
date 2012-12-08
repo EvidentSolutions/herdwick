@@ -30,7 +30,9 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.Collections.singletonList;
 
@@ -97,16 +99,27 @@ public final class JdbcMetadataProvider implements MetadataProvider {
     }
 
     private static void createUniqueConstraints(@NotNull Table table, @NotNull DatabaseMetaData databaseMetaData) throws SQLException {
+        Map<String,List<Column>> uniqueIndices = new HashMap<String, List<Column>>();
+
         ResultSet rs = databaseMetaData.getIndexInfo(null, table.getName().getSchema(), table.getName().getName(), true, false);
         try {
             while (rs.next()) {
-                String columnName = rs.getString("COLUMN_NAME");
-                table.getColumn(columnName).unique = true;
-            }
+                String indexName = rs.getString("INDEX_NAME");
+                List<Column> columns = uniqueIndices.get(indexName);
+                if (columns == null) {
+                    columns = new ArrayList<Column>();
+                    uniqueIndices.put(indexName, columns);
+                }
 
+                String columnName = rs.getString("COLUMN_NAME");
+                columns.add(table.getColumn(columnName));
+            }
         } finally {
             rs.close();
         }
+
+        for (Map.Entry<String, List<Column>> entry : uniqueIndices.entrySet())
+            table.addUniqueConstraint(entry.getKey(), entry.getValue());
     }
 
     private static void createColumns(@NotNull Table table, @NotNull DatabaseMetaData databaseMetaData) throws SQLException {

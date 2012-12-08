@@ -38,6 +38,8 @@ public final class Column {
     public boolean autoIncrement;
     public String typeName;
     public int size;
+
+    @Deprecated
     public boolean unique;
     public int decimalDigits;
 
