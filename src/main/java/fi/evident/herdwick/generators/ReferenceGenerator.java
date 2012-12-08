@@ -50,14 +50,18 @@ public final class ReferenceGenerator implements Generator<Object> {
         assert referencedColumn != null;
 
         List<Object> ids = db.findAll(Object.class, "select " + referencedColumn.name + " from " + referencedColumn.table.getName());
-        // TODO: support unique constraints
-
-        if (ids.isEmpty())
-            throw new IllegalStateException(referencedColumn + " has no values");
 
         List<Object> values = new ArrayList<Object>(count);
-        for (int i = 0; i < count; i++)
-            values.add(ids.get(random.nextInt(ids.size())));
+        for (int i = 0; i < count; i++) {
+            if (ids.isEmpty())
+                throw new IllegalStateException(referencedColumn + " could not create unique values for " + column);
+
+            int index = random.nextInt(ids.size());
+            values.add(ids.get(index));
+
+            if (column.unique)
+                ids.remove(index);
+        }
         return values;
     }
 }
