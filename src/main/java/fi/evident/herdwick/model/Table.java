@@ -76,7 +76,7 @@ public final class Table {
     @NotNull
     public Column getColumn(@NotNull String columnName) {
         for (Column column : columns)
-            if (column.name.equals(columnName))
+            if (columnName.equalsIgnoreCase(column.name))
                 return column;
 
         throw new IllegalArgumentException("no such column: '" + columnName + "' in table " + name);

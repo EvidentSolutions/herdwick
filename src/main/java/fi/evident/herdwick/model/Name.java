@@ -63,8 +63,8 @@ public final class Name {
         if (o instanceof Name) {
             Name rhs = (Name) o;
 
-            return name.equals(rhs.name)
-                && (schema != null ? schema.equals(rhs.schema) : rhs.schema == null);
+            return name.equalsIgnoreCase(rhs.name)
+                && (schema != null ? schema.equalsIgnoreCase(rhs.schema) : rhs.schema == null);
         }
 
         return false;
@@ -72,6 +72,6 @@ public final class Name {
 
     @Override
     public int hashCode() {
-        return 31 * (schema != null ? schema.hashCode() : 0) + name.hashCode();
+        return 31 * (schema != null ? schema.toLowerCase().hashCode() : 0) + name.toLowerCase().hashCode();
     }
 }
