@@ -42,16 +42,36 @@ public final class JdbcMetadataProvider implements MetadataProvider {
     public TableCollection loadTables(@NotNull Connection connection) throws SQLException {
         DatabaseMetaData metaData = connection.getMetaData();
         List<Name> names = loadTableNames(metaData);
-        TableCollection result = new TableCollection();
+        TableCollection tables = new TableCollection();
 
         for (Name name : names) {
-            Table table = result.addTable(name);
+            Table table = tables.addTable(name);
 
             createColumns(table, metaData);
             createUniqueConstraints(table, metaData);
         }
 
-        return result;
+        for (Table table : tables) {
+            createForeignKeys(tables, table, metaData);
+        }
+
+        return tables;
+    }
+
+    private static void createForeignKeys(@NotNull TableCollection tables, @NotNull Table table, @NotNull DatabaseMetaData metaData) throws SQLException {
+        ResultSet rs = metaData.getImportedKeys(null, table.getName().getSchema(), table.getName().getName());
+        try {
+            while (rs.next()) {
+                Name name = new Name(rs.getString("PKTABLE_SCHEM"), rs.getString("PKTABLE_NAME"));
+                String pkColumn = rs.getString("PKCOLUMN_NAME");
+                String fkColumn = rs.getString("FKCOLUMN_NAME");
+
+                table.getColumn(fkColumn).references = tables.getTable(name).getColumn(pkColumn);
+            }
+
+        } finally {
+            rs.close();
+        }
     }
 
     private static List<Name> loadTableNames(@NotNull DatabaseMetaData metaData) throws SQLException {
@@ -70,7 +90,7 @@ public final class JdbcMetadataProvider implements MetadataProvider {
         }
     }
 
-    private static void createUniqueConstraints(Table table, DatabaseMetaData databaseMetaData) throws SQLException {
+    private static void createUniqueConstraints(@NotNull Table table, @NotNull DatabaseMetaData databaseMetaData) throws SQLException {
         ResultSet rs = databaseMetaData.getIndexInfo(null, table.getName().getSchema(), table.getName().getName(), true, false);
         try {
             while (rs.next()) {
@@ -83,7 +103,7 @@ public final class JdbcMetadataProvider implements MetadataProvider {
         }
     }
 
-    private static void createColumns(Table table, DatabaseMetaData databaseMetaData) throws SQLException {
+    private static void createColumns(@NotNull Table table, @NotNull DatabaseMetaData databaseMetaData) throws SQLException {
         Name name = table.getName();
         ResultSet rs = databaseMetaData.getColumns(null, name.getSchema(), name.getName(), null);
         try {

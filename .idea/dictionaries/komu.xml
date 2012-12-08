@@ -2,8 +2,11 @@
   <dictionary name="komu">
     <words>
       <w>abcdefghijklmnopqrstuvwxyz</w>
+      <w>fkcolumn</w>
       <w>herdwick</w>
       <w>nullable</w>
+      <w>pkcolumn</w>
+      <w>pktable</w>
       <w>populator</w>
       <w>schem</w>
     </words>

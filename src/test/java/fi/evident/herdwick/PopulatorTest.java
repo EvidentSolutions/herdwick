@@ -96,7 +96,6 @@ public class PopulatorTest {
     }
 
     @Test
-    @Ignore
     public void populateForeignKeys() {
         db.update("drop table if exists emp");
         db.update("drop table if exists dept");
