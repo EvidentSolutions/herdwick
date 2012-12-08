@@ -20,43 +20,39 @@
  * THE SOFTWARE.
  */
 
-package fi.evident.herdwick.generators;
+package fi.evident.herdwick.model;
 
-import fi.evident.dalesbred.Database;
-import fi.evident.dalesbred.query.QueryBuilder;
-import fi.evident.herdwick.model.Column;
-import fi.evident.herdwick.model.Reference;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 
-public final class ReferenceGenerator implements Generator<Object> {
+import static java.util.Collections.unmodifiableList;
+
+/**
+ * A foreign key reference.
+ */
+public final class Reference {
 
     @NotNull
-    private final List<Object> ids;
+    private final Table table;
 
-    public ReferenceGenerator(@NotNull Database db, @NotNull Column column) {
-        Reference reference = column.references;
-        assert reference != null;
+    @NotNull
+    private final List<Column> columns;
 
-        QueryBuilder qb = new QueryBuilder();
-        qb.append("select ");
-        for (Iterator<Column> it = reference.getColumns().iterator(); it.hasNext(); ) {
-            qb.append(it.next().name);
-            if (it.hasNext())
-                qb.append(",");
-        }
-        qb.append(" from ").append(reference.getTable().getName().toString());
+    public Reference(@NotNull Table table, @NotNull List<Column> columns) {
+        if (columns.isEmpty()) throw new IllegalArgumentException("no columns for reference");
 
-        ids = db.findAll(Object.class, qb.build());
+        this.table = table;
+        this.columns = columns;
     }
 
-    @Nullable
-    @Override
-    public Object randomValue(@NotNull Random random) {
-        return ids.get(random.nextInt(ids.size()));
+    @NotNull
+    public Table getTable() {
+        return table;
+    }
+
+    @NotNull
+    public List<Column> getColumns() {
+        return unmodifiableList(columns);
     }
 }

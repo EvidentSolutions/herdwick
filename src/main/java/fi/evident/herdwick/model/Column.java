@@ -42,7 +42,7 @@ public final class Column {
     public int decimalDigits;
 
     @Nullable
-    public Column references;
+    public Reference references;
 
     Column(@NotNull Table table, @NotNull String name) {
         this.table = table;

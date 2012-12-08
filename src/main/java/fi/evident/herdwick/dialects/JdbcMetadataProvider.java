@@ -22,10 +22,7 @@
 
 package fi.evident.herdwick.dialects;
 
-import fi.evident.herdwick.model.Column;
-import fi.evident.herdwick.model.Name;
-import fi.evident.herdwick.model.Table;
-import fi.evident.herdwick.model.TableCollection;
+import fi.evident.herdwick.model.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.Connection;
@@ -34,6 +31,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import static java.util.Collections.singletonList;
 
 public final class JdbcMetadataProvider implements MetadataProvider {
 
@@ -66,7 +65,14 @@ public final class JdbcMetadataProvider implements MetadataProvider {
                 String pkColumn = rs.getString("PKCOLUMN_NAME");
                 String fkColumn = rs.getString("FKCOLUMN_NAME");
 
-                table.getColumn(fkColumn).references = tables.getTable(name).getColumn(pkColumn);
+                // TODO: support multi-column reference
+                Table referencedTable = tables.getTable(name);
+                Column referencedColumn = referencedTable.getColumn(pkColumn);
+
+                Column targetColumn = table.getColumn(fkColumn);
+                if (targetColumn.references != null)
+                    throw new IllegalStateException("multiple references to " + table);
+                targetColumn.references = new Reference(referencedTable, singletonList(referencedColumn));
             }
 
         } finally {
