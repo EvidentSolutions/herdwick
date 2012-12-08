@@ -22,7 +22,7 @@
 
 package fi.evident.herdwick.generators;
 
-import fi.evident.herdwick.metadata.Column;
+import fi.evident.herdwick.model.Column;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;

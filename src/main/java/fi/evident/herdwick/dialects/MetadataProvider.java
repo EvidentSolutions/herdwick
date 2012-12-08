@@ -20,36 +20,16 @@
  * THE SOFTWARE.
  */
 
-package fi.evident.herdwick.metadata;
+package fi.evident.herdwick.dialects;
 
+import fi.evident.herdwick.model.TableCollection;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.sql.Connection;
+import java.sql.SQLException;
 
-/**
- * Represents all the tables we are interested in. This is not necessarily a single schema,
- * since we could have tables from multiple schemas or we could have just a subset of tables
- * in a schema.
- */
-public final class TableCollection {
+public interface MetadataProvider {
 
     @NotNull
-    private final Map<Name,Table> tables = new HashMap<Name,Table>();
-
-    @NotNull
-    public Table getTable(@NotNull Name name) {
-        Table table = tables.get(name);
-        if (table != null)
-            return table;
-        else
-            throw new IllegalArgumentException("could not find table: " + name);
-    }
-
-    void addTable(@NotNull Table table) {
-        if (tables.containsKey(table.getName()))
-            throw new IllegalStateException("table " + table.getName() + " already exists in the collection.");
-
-        tables.put(table.getName(), table);
-    }
+    TableCollection loadTables(@NotNull Connection connection) throws SQLException;
 }

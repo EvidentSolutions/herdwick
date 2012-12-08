@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  */
 
-package fi.evident.herdwick.metadata;
+package fi.evident.herdwick.model;
 
 import org.jetbrains.annotations.NotNull;
 

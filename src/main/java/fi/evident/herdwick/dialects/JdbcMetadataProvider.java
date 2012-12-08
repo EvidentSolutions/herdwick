@@ -20,8 +20,12 @@
  * THE SOFTWARE.
  */
 
-package fi.evident.herdwick.metadata;
+package fi.evident.herdwick.dialects;
 
+import fi.evident.herdwick.model.Column;
+import fi.evident.herdwick.model.Name;
+import fi.evident.herdwick.model.Table;
+import fi.evident.herdwick.model.TableCollection;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.Connection;
@@ -40,8 +44,12 @@ public final class JdbcMetadataProvider implements MetadataProvider {
         List<Name> names = loadTableNames(metaData);
         TableCollection result = new TableCollection();
 
-        for (Name name : names)
-            result.addTable(getTable(metaData, name));
+        for (Name name : names) {
+            Table table = result.addTable(name);
+
+            createColumns(table, metaData);
+            createUniqueConstraints(table, metaData);
+        }
 
         return result;
     }
@@ -62,18 +70,7 @@ public final class JdbcMetadataProvider implements MetadataProvider {
         }
     }
 
-    @NotNull
-    private static Table getTable(@NotNull DatabaseMetaData metaData, @NotNull Name tableName) throws SQLException {
-        Table table = new Table(tableName);
-
-        loadColumns(tableName, table, metaData);
-
-        updateUniqueConstraints(table, metaData);
-
-        return table;
-    }
-
-    private static void updateUniqueConstraints(Table table, DatabaseMetaData databaseMetaData) throws SQLException {
+    private static void createUniqueConstraints(Table table, DatabaseMetaData databaseMetaData) throws SQLException {
         ResultSet rs = databaseMetaData.getIndexInfo(null, table.getName().getSchema(), table.getName().getName(), true, false);
         try {
             while (rs.next()) {
@@ -86,8 +83,9 @@ public final class JdbcMetadataProvider implements MetadataProvider {
         }
     }
 
-    private static void loadColumns(Name tableName, Table table, DatabaseMetaData databaseMetaData) throws SQLException {
-        ResultSet rs = databaseMetaData.getColumns(null, tableName.getSchema(), tableName.getName(), null);
+    private static void createColumns(Table table, DatabaseMetaData databaseMetaData) throws SQLException {
+        Name name = table.getName();
+        ResultSet rs = databaseMetaData.getColumns(null, name.getSchema(), name.getName(), null);
         try {
 
             while (rs.next()) {

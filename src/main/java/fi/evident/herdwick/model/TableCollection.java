@@ -20,33 +20,39 @@
  * THE SOFTWARE.
  */
 
-package fi.evident.herdwick.metadata;
+package fi.evident.herdwick.model;
 
 import org.jetbrains.annotations.NotNull;
 
-public final class Column {
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Represents all the tables we are interested in. This is not necessarily a single schema,
+ * since we could have tables from multiple schemas or we could have just a subset of tables
+ * in a schema.
+ */
+public final class TableCollection {
 
     @NotNull
-    public final Table table;
+    private final Map<Name,Table> tables = new HashMap<Name,Table>();
 
     @NotNull
-    public final String name;
-
-    public boolean nullable;
-    public int dataType;
-    public boolean autoIncrement;
-    public String typeName;
-    public int size;
-    public boolean unique;
-    public int decimalDigits;
-
-    Column(@NotNull Table table, @NotNull String name) {
-        this.table = table;
-        this.name = name;
+    public Table getTable(@NotNull Name name) {
+        Table table = tables.get(name);
+        if (table != null)
+            return table;
+        else
+            throw new IllegalArgumentException("could not find table: " + name);
     }
 
-    @Override
-    public String toString() {
-        return table.getName().toString() + '.' + name;
+    @NotNull
+    public Table addTable(@NotNull Name name) {
+        if (tables.containsKey(name))
+            throw new IllegalStateException("table " + name + " already exists in the collection.");
+
+        Table table = new Table(name);
+        tables.put(table.getName(), table);
+        return table;
     }
 }

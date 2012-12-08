@@ -20,15 +20,58 @@
  * THE SOFTWARE.
  */
 
-package fi.evident.herdwick.metadata;
+package fi.evident.herdwick.model;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.sql.Connection;
-import java.sql.SQLException;
+public final class Name {
 
-public interface MetadataProvider {
+    @Nullable
+    private final String schema;
 
     @NotNull
-    TableCollection loadTables(@NotNull Connection connection) throws SQLException;
+    private final String name;
+
+    public Name(@Nullable String schema, @NotNull String name) {
+        this.schema = schema;
+        this.name = name;
+    }
+
+    @Nullable
+    public String getSchema() {
+        return schema;
+    }
+
+    @NotNull
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String toString() {
+        if (schema != null)
+            return schema + '.' + name;
+        else
+            return name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (o instanceof Name) {
+            Name rhs = (Name) o;
+
+            return name.equals(rhs.name)
+                && (schema != null ? schema.equals(rhs.schema) : rhs.schema == null);
+        }
+
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * (schema != null ? schema.hashCode() : 0) + name.hashCode();
+    }
 }

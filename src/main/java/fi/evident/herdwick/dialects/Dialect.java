@@ -23,8 +23,8 @@
 package fi.evident.herdwick.dialects;
 
 import fi.evident.dalesbred.SQL;
-import fi.evident.herdwick.metadata.Column;
-import fi.evident.herdwick.metadata.Name;
+import fi.evident.herdwick.model.Column;
+import fi.evident.herdwick.model.Name;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;

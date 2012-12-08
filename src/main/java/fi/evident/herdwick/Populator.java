@@ -27,8 +27,12 @@ import fi.evident.dalesbred.TransactionCallback;
 import fi.evident.dalesbred.TransactionContext;
 import fi.evident.herdwick.dialects.DefaultDialect;
 import fi.evident.herdwick.dialects.Dialect;
+import fi.evident.herdwick.dialects.JdbcMetadataProvider;
+import fi.evident.herdwick.dialects.MetadataProvider;
 import fi.evident.herdwick.generators.DataGenerator;
-import fi.evident.herdwick.metadata.*;
+import fi.evident.herdwick.model.Column;
+import fi.evident.herdwick.model.Name;
+import fi.evident.herdwick.model.TableCollection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
