@@ -32,7 +32,7 @@ import org.junit.Test;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-public class HerdwickTest {
+public class PopulatorTest {
 
     private final Database db = TestDatabaseProvider.databaseForProperties("postgresql-connection.properties");
 
@@ -44,8 +44,8 @@ public class HerdwickTest {
         db.update("drop table if exists foo");
         db.update("create table foo (name varchar(10) primary key)");
 
-        Herdwick herdwick = new Herdwick(db);
-        herdwick.populate("foo", 50);
+        Populator populator = new Populator(db);
+        populator.populate("foo", 50);
 
         assertThat(db.findUniqueInt("select count(*) from foo"), is(50));
     }
@@ -55,8 +55,8 @@ public class HerdwickTest {
         db.update("drop table if exists foo");
         db.update("create table foo (name varchar(10) primary key, description varchar(20) not null, counter int not null)");
 
-        Herdwick herdwick = new Herdwick(db);
-        herdwick.populate("foo", 50);
+        Populator populator = new Populator(db);
+        populator.populate("foo", 50);
 
         assertThat(db.findUniqueInt("select count(*) from foo"), is(50));
     }
@@ -66,8 +66,8 @@ public class HerdwickTest {
         db.update("drop table if exists foo");
         db.update("create table foo (id serial primary key, name varchar(10) not null unique)");
 
-        Herdwick herdwick = new Herdwick(db);
-        herdwick.populate("foo", 50);
+        Populator populator = new Populator(db);
+        populator.populate("foo", 50);
 
         assertThat(db.findUniqueInt("select count(*) from foo"), is(50));
     }
@@ -77,8 +77,8 @@ public class HerdwickTest {
         db.update("drop table if exists foo");
         db.update("create table foo (id serial primary key, flag boolean not null)");
 
-        Herdwick herdwick = new Herdwick(db);
-        herdwick.populate("foo", 50);
+        Populator populator = new Populator(db);
+        populator.populate("foo", 50);
 
         assertThat(db.findUniqueInt("select count(*) from foo"), is(50));
     }
@@ -89,8 +89,8 @@ public class HerdwickTest {
         db.update("drop table if exists foo");
         db.update("create table foo (id serial primary key, flag boolean not null, num varchar(10), unique (flag, num))");
 
-        Herdwick herdwick = new Herdwick(db);
-        herdwick.populate("foo", 50);
+        Populator populator = new Populator(db);
+        populator.populate("foo", 50);
 
         assertThat(db.findUniqueInt("select count(*) from foo"), is(50));
     }
@@ -103,9 +103,9 @@ public class HerdwickTest {
         db.update("create table dept (id serial primary key, name varchar(10) not null)");
         db.update("create table emp (id serial primary key, name varchar(10) not null, dept_id int references dept)");
 
-        Herdwick herdwick = new Herdwick(db);
-        herdwick.populate("dept", 10);
-        herdwick.populate("emp", 100);
+        Populator populator = new Populator(db);
+        populator.populate("dept", 10);
+        populator.populate("emp", 100);
 
         assertThat(db.findUniqueInt("select count(*) from dept"), is(10));
         assertThat(db.findUniqueInt("select count(*) from emp"), is(100));

@@ -38,7 +38,7 @@ import java.util.List;
 
 import static fi.evident.herdwick.utils.CollectionUtils.transposed;
 
-public final class Herdwick {
+public final class Populator {
 
     @NotNull
     private final Database db;
@@ -58,11 +58,11 @@ public final class Herdwick {
     @NotNull
     private final TableCollection tables;
 
-    public Herdwick(@NotNull Database db) {
+    public Populator(@NotNull Database db) {
         this(db, "public");
     }
 
-    public Herdwick(@NotNull Database db, @Nullable String defaultSchema) {
+    public Populator(@NotNull Database db, @Nullable String defaultSchema) {
         this.db = db;
         this.defaultSchema = defaultSchema;
         this.tables = db.withTransaction(new TransactionCallback<TableCollection>() {
