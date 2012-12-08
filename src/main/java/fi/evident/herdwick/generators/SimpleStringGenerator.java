@@ -22,39 +22,31 @@
 
 package fi.evident.herdwick.generators;
 
-import fi.evident.herdwick.model.Column;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Random;
 
-import static java.lang.Math.min;
-
-public final class SimpleStringGenerator extends AbstractSimpleGenerator<String> {
-
-    @NotNull
-    private final Random random;
+public final class SimpleStringGenerator implements Generator<String> {
 
     private final int maxLength;
 
     @NotNull
     private final String alphabet;
 
-    SimpleStringGenerator(@NotNull Random random) {
-        this(random, 1000, "abcdefghijklmnopqrstuvwxyz0123456789-_ ");
+    SimpleStringGenerator(int maxLength) {
+        this(maxLength, "abcdefghijklmnopqrstuvwxyz0123456789-_ ");
     }
 
-    SimpleStringGenerator(@NotNull Random random, int maxLength, @NotNull String alphabet) {
-        this.random = random;
+    SimpleStringGenerator(int maxLength, @NotNull String alphabet) {
         this.maxLength = maxLength;
         this.alphabet = alphabet;
     }
 
     @Nullable
     @Override
-    protected String randomValue(@NotNull Column column) {
-        int length = random.nextInt(min(column.size, maxLength));
-
+    public String randomValue(@NotNull Random random) {
+        int length = random.nextInt(maxLength);
         StringBuilder sb = new StringBuilder(length);
 
         for (int i = 0; i < length; i++)

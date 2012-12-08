@@ -27,7 +27,9 @@ import fi.evident.herdwick.model.Column;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.Types;
-import java.util.Random;
+import java.util.*;
+
+import static java.lang.Math.min;
 
 public final class DataGenerator {
 
@@ -37,30 +39,54 @@ public final class DataGenerator {
     @NotNull
     private final Random random = new Random();
 
+    private static final int MAX_SKIPPED_ROWS = 10000;
+
     public DataGenerator(@NotNull Database db) {
         this.db = db;
     }
 
     public void prepare(@NotNull Batch batch) {
-        for (Column column : batch.getColumns()) {
-            Generator<?> generator = generatorFor(column);
-            batch.addColumnData(generator.createValuesForColumn(batch.getSize(), column));
+        // TODO: to satisfy possible unique constraints we first need to group the columns in
+        int skipped = 0;
+
+        Map<Column, Generator<?>> generators = createGenerators(batch);
+
+        while (!batch.isReady()) {
+            if (skipped >= MAX_SKIPPED_ROWS)
+                throw new IllegalArgumentException("skipped " + skipped + " rows");
+            List<Object> row = new ArrayList<Object>(batch.getColumns().size());
+
+            for (Column column : batch.getColumns()) {
+                row.add(generators.get(column).randomValue(random));
+            }
+            if (!batch.addRow(row))
+                skipped++;
         }
+    }
+
+    @NotNull
+    private Map<Column,Generator<?>> createGenerators(@NotNull Batch batch) {
+        Map<Column,Generator<?>> generators = new HashMap<Column, Generator<?>>();
+
+        for (Column column : batch.getColumns())
+            generators.put(column, generatorFor(column));
+
+        return generators;
     }
 
     @NotNull
     private Generator<?> generatorFor(Column column) {
         if (column.references != null)
-            return new ReferenceGenerator(db, random);
+            return new ReferenceGenerator(db, column);
 
         switch (column.dataType) {
             case Types.VARCHAR:
-                return new SimpleStringGenerator(random);
+                return new SimpleStringGenerator(min(column.size, 1000));
             case Types.BOOLEAN:
             case Types.BIT:
-                return new SimpleBooleanGenerator(random);
+                return new SimpleBooleanGenerator();
             case Types.INTEGER:
-                return new SimpleIntegerGenerator(random);
+                return new SimpleIntegerGenerator();
             default:
                 throw new IllegalArgumentException("unknown sql-type: " + column.dataType + " (" + column.typeName + ')');
         }

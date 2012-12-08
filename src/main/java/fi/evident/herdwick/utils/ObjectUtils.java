@@ -22,33 +22,13 @@
 
 package fi.evident.herdwick.utils;
 
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
+public final class ObjectUtils {
 
-import static java.util.Collections.emptyList;
+    private ObjectUtils() { }
 
-public final class CollectionUtils {
-
-    private CollectionUtils() { }
-
-    @NotNull
-    public static <T> List<List<T>> transposed(@NotNull List<? extends List<? extends T>> rows) {
-        if (rows.isEmpty()) return emptyList();
-
-        int rowCount = rows.size();
-        int columnCount = rows.get(0).size();
-
-        List<List<T>> result = new ArrayList<List<T>>(columnCount);
-
-        for (int i = 0; i < columnCount; i++) {
-            List<T> column = new ArrayList<T>(rowCount);
-            for (List<? extends T> row : rows)
-                column.add(row.get(i));
-            result.add(column);
-        }
-
-        return result;
+    public static boolean equal(@Nullable Object left, @Nullable Object right) {
+        return (left == null) ? right == null : left.equals(right);
     }
 }

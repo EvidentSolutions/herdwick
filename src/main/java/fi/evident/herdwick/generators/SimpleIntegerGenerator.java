@@ -22,24 +22,16 @@
 
 package fi.evident.herdwick.generators;
 
-import fi.evident.herdwick.model.Column;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Random;
 
-final class SimpleIntegerGenerator extends AbstractSimpleGenerator<Integer> {
-
-    @NotNull
-    private final Random random;
-
-    SimpleIntegerGenerator(@NotNull Random random) {
-        this.random = random;
-    }
+final class SimpleIntegerGenerator implements Generator<Integer> {
 
     @Nullable
     @Override
-    protected Integer randomValue(@NotNull Column column) {
+    public Integer randomValue(@NotNull Random random) {
         return random.nextInt();
     }
 }

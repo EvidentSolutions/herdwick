@@ -25,11 +25,12 @@ package fi.evident.herdwick.generators;
 import fi.evident.herdwick.model.Column;
 import fi.evident.herdwick.model.Table;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static fi.evident.herdwick.utils.CollectionUtils.transposed;
+import static fi.evident.herdwick.utils.ObjectUtils.equal;
 import static java.util.Collections.unmodifiableList;
 
 public final class Batch {
@@ -51,15 +52,38 @@ public final class Batch {
 
     @NotNull
     public List<? extends List<?>> rowsToInsert() {
-        return transposed(data);
+        return data;
     }
 
-    public void addColumnData(@NotNull List<?> valuesForColumn) {
-        data.add(valuesForColumn);
+    public boolean addRow(@NotNull List<?> row) {
+        if (satisfiesUniqueConstraints(row)) {
+            data.add(row);
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    public int getSize() {
-        return size;
+    private boolean satisfiesUniqueConstraints(@NotNull List<?> row) {
+        // TODO: support multi-column constraints
+        for (int i = 0; i < columns.size(); i++) {
+            Column column = columns.get(i);
+            if (column.unique && !satisfiesUniqueConstraints(i, row.get(i)))
+                return false;
+        }
+        return true;
+    }
+
+    private boolean satisfiesUniqueConstraints(int index, @Nullable Object value) {
+        for (List<?> row : data)
+            if (equal(row.get(index), value))
+                return false;
+
+        return true;
+    }
+
+    public boolean isReady() {
+        return data.size() >= size;
     }
 
     @NotNull

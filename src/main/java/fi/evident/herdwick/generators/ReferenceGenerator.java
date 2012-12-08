@@ -25,43 +25,26 @@ package fi.evident.herdwick.generators;
 import fi.evident.dalesbred.Database;
 import fi.evident.herdwick.model.Column;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public final class ReferenceGenerator implements Generator<Object> {
 
     @NotNull
-    private final Database db;
+    private final List<Object> ids;
 
-    @NotNull
-    private final Random random;
-
-    public ReferenceGenerator(@NotNull Database db, @NotNull Random random) {
-        this.db = db;
-        this.random = random;
-    }
-
-    @NotNull
-    @Override
-    public List<Object> createValuesForColumn(int count, @NotNull Column column) {
+    public ReferenceGenerator(@NotNull Database db, @NotNull Column column) {
         Column referencedColumn = column.references;
         assert referencedColumn != null;
 
-        List<Object> ids = db.findAll(Object.class, "select " + referencedColumn.name + " from " + referencedColumn.table.getName());
+        ids = db.findAll(Object.class, "select " + referencedColumn.name + " from " + referencedColumn.table.getName());
+    }
 
-        List<Object> values = new ArrayList<Object>(count);
-        for (int i = 0; i < count; i++) {
-            if (ids.isEmpty())
-                throw new IllegalStateException(referencedColumn + " could not create unique values for " + column);
-
-            int index = random.nextInt(ids.size());
-            values.add(ids.get(index));
-
-            if (column.unique)
-                ids.remove(index);
-        }
-        return values;
+    @Nullable
+    @Override
+    public Object randomValue(@NotNull Random random) {
+        return ids.get(random.nextInt(ids.size()));
     }
 }

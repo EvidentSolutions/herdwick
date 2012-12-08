@@ -22,24 +22,16 @@
 
 package fi.evident.herdwick.generators;
 
-import fi.evident.herdwick.model.Column;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Random;
 
-final class SimpleBooleanGenerator extends AbstractSimpleGenerator<Boolean> {
-
-    @NotNull
-    private final Random random;
-
-    SimpleBooleanGenerator(@NotNull Random random) {
-        this.random = random;
-    }
+final class SimpleBooleanGenerator implements Generator<Boolean> {
 
     @Nullable
     @Override
-    protected Boolean randomValue(@NotNull Column column) {
+    public Boolean randomValue(@NotNull Random random) {
         return random.nextBoolean();
     }
 }

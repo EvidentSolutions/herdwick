@@ -22,13 +22,13 @@
 
 package fi.evident.herdwick.generators;
 
-import fi.evident.herdwick.model.Column;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
+import java.util.Random;
 
 public interface Generator<T> {
 
-    @NotNull
-    List<T> createValuesForColumn(int count, @NotNull Column column);
+    @Nullable
+    T randomValue(@NotNull Random random);
 }
