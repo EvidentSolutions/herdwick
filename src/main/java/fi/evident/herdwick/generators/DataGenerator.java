@@ -87,16 +87,16 @@ public final class DataGenerator {
         if (column.getReference() != null)
             return new ReferenceGenerator(db, dialect, column);
 
-        switch (column.dataType) {
+        switch (column.getDataType()) {
             case Types.VARCHAR:
-                return new SimpleStringGenerator(min(column.size, 1000));
+                return new SimpleStringGenerator(min(column.getSize(), 1000));
             case Types.BOOLEAN:
             case Types.BIT:
                 return SimpleGenerators.BOOLEAN;
             case Types.INTEGER:
                 return SimpleGenerators.INTEGER;
             default:
-                throw new IllegalArgumentException("could not find generator for column " + column + " of type: " + column.dataType + " (" + column.typeName + ')');
+                throw new IllegalArgumentException("could not find generator for column " + column + " of type: " + column.getDataType() + " (" + column.getTypeName() + ')');
         }
     }
 }

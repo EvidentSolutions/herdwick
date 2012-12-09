@@ -131,12 +131,12 @@ public final class JdbcMetadataProvider implements MetadataProvider {
 
             while (rs.next()) {
                 Column column = table.addColumn(rs.getString("COLUMN_NAME"));
-                column.nullable = rs.getInt("NULLABLE") == DatabaseMetaData.columnNullable;
-                column.dataType = rs.getInt("DATA_TYPE");
-                column.typeName = rs.getString("TYPE_NAME");
-                column.autoIncrement = "YES".equals(rs.getString("IS_AUTOINCREMENT"));
-                column.size = rs.getInt("COLUMN_SIZE");
-                column.decimalDigits = rs.getInt("DECIMAL_DIGITS");
+                column.setNullable(rs.getInt("NULLABLE") == DatabaseMetaData.columnNullable);
+                column.setDataType(rs.getInt("DATA_TYPE"));
+                column.setTypeName(rs.getString("TYPE_NAME"));
+                column.setAutoIncrement("YES".equals(rs.getString("IS_AUTOINCREMENT")));
+                column.setSize(rs.getInt("COLUMN_SIZE"));
+                column.setDecimalDigits(rs.getInt("DECIMAL_DIGITS"));
             }
 
         } finally {

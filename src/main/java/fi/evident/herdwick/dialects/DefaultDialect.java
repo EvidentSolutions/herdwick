@@ -76,7 +76,7 @@ public final class DefaultDialect implements Dialect {
         for (int i = 0, size = columns.size(); i < size; i++) {
             if (i != 0)
                 sb.append(',');
-            appendName(sb, columns.get(i).name);
+            appendName(sb, columns.get(i).getName());
         }
     }
 

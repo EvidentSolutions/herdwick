@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static java.util.Collections.unmodifiableCollection;
+import static java.util.Collections.unmodifiableList;
 
 /**
  * Represents a table in the database.
@@ -57,9 +58,9 @@ public final class Table {
     public List<Column> getNonAutoIncrementColumns() {
         List<Column> result = new ArrayList<Column>(columns.size());
         for (Column column : columns)
-            if (!column.autoIncrement)
+            if (!column.isAutoIncrement())
                 result.add(column);
-        return result;
+        return unmodifiableList(result);
     }
 
     @NotNull
@@ -83,7 +84,7 @@ public final class Table {
     @NotNull
     public Column getColumn(@NotNull String columnName) {
         for (Column column : columns)
-            if (columnName.equalsIgnoreCase(column.name))
+            if (columnName.equalsIgnoreCase(column.getName()))
                 return column;
 
         throw new IllegalArgumentException("no such column: '" + columnName + "' in table " + name);
