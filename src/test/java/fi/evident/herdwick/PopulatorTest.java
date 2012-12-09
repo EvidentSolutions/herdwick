@@ -124,6 +124,16 @@ public class PopulatorTest {
     }
 
     @Test
+    public void failingToCreateWholeBatch() {
+        db.update("drop table if exists table_with_only_two_possible_rows");
+        db.update("create table table_with_only_two_possible_rows (flag boolean primary key)");
+
+        populator.populate("table_with_only_two_possible_rows", 3);
+
+        assertThat(db.findUniqueInt("select count(*) from table_with_only_two_possible_rows"), is(2));
+    }
+
+    @Test
     public void batchModeFlag() {
         assertThat(populator.isBatchMode(), is(true));
         populator.setBatchMode(false);

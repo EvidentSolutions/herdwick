@@ -46,11 +46,11 @@ public final class Batch {
 
     @NotNull
     private final List<Column> columns;
-    private final int size;
+    private final int requestedSize;
 
-    public Batch(@NotNull Table table, int size) {
+    public Batch(@NotNull Table table, int requestedSize) {
         this.table = table;
-        this.size = size;
+        this.requestedSize = requestedSize;
         this.columns = table.getNonAutoIncrementColumns();
     }
 
@@ -111,8 +111,16 @@ public final class Batch {
         return indices;
     }
 
+    public int getRequestedSize() {
+        return requestedSize;
+    }
+
+    public int getCurrentSize() {
+        return data.size();
+    }
+
     public boolean isReady() {
-        return data.size() >= size;
+        return data.size() >= requestedSize;
     }
 
     @NotNull

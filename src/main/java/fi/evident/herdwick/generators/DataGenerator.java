@@ -29,6 +29,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.sql.Types;
 import java.util.*;
+import java.util.logging.Logger;
 
 import static java.lang.Math.min;
 
@@ -46,7 +47,10 @@ public final class DataGenerator {
     @NotNull
     private final Random random = new Random();
 
-    private static final int MAX_SKIPPED_ROWS = 10000;
+    @NotNull
+    private static final Logger log = Logger.getLogger(DataGenerator.class.getName());
+
+    private static final int MAX_DISCARDED_ROWS = 10000;
 
     public DataGenerator(@NotNull Database db, @NotNull Dialect dialect) {
         this.db = db;
@@ -54,22 +58,22 @@ public final class DataGenerator {
     }
 
     public void prepare(@NotNull Batch batch) {
-        // TODO: to satisfy possible unique constraints we first need to group the columns in
-        int skipped = 0;
+        int discarded = 0;
 
         Map<Column, Generator<?>> generators = createGenerators(batch);
 
-        while (!batch.isReady()) {
-            if (skipped >= MAX_SKIPPED_ROWS)
-                throw new IllegalArgumentException("skipped " + skipped + " rows");
+        while (!batch.isReady() && discarded < MAX_DISCARDED_ROWS) {
             List<Object> row = new ArrayList<Object>(batch.getColumns().size());
 
-            for (Column column : batch.getColumns()) {
+            for (Column column : batch.getColumns())
                 row.add(generators.get(column).randomValue(random));
-            }
+
             if (!batch.addRow(row))
-                skipped++;
+                discarded++;
         }
+
+        if (!batch.isReady())
+            log.warning("Caller requested " + batch.getRequestedSize() + " rows to be generated for " + batch.getTable().getName() + ", but could only produce " + batch.getCurrentSize() + " rows satisfying unique constraints. (Discarded " + discarded + " random rows.)");
     }
 
     @NotNull
