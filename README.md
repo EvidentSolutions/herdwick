@@ -1,7 +1,8 @@
 # Herdwick
 
-The Herdwick is a breed of domestic sheep native to the Lake District of Cumbria in North West England.
-The name "Herdwick" is derived from the Old Norse herdvyck, meaning sheep pasture.
+The Herdwick is a breed of domestic sheep native to the [Lake District](http://en.wikipedia.org/wiki/Lake_District)
+of [Cumbria](http://en.wikipedia.org/wiki/Cumbria) in North West England. The name "Herdwick" is derived from
+the Old Norse herdvyck, meaning sheep pasture.
 
 Herdwick is also a library for easily populating databases with dummy data. It analyses database schema
 for foreign key references and other constraints to make generation of data as painless as possible.
