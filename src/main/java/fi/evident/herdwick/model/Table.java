@@ -25,9 +25,10 @@ package fi.evident.herdwick.model;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
-import static java.util.Collections.unmodifiableList;
+import static java.util.Collections.unmodifiableCollection;
 
 public final class Table {
 
@@ -36,6 +37,9 @@ public final class Table {
 
     @NotNull
     private final List<Column> columns = new ArrayList<Column>();
+
+    @NotNull
+    private final List<UniqueConstraint> uniqueConstraints = new ArrayList<UniqueConstraint>();
 
     Table(@NotNull Name name) {
         this.name = name;
@@ -47,17 +51,17 @@ public final class Table {
     }
 
     @NotNull
-    public List<Column> getColumns() {
-        return unmodifiableList(columns);
-    }
-
-    @NotNull
     public List<Column> getNonAutoIncrementColumns() {
         List<Column> result = new ArrayList<Column>(columns.size());
         for (Column column : columns)
             if (!column.autoIncrement)
                 result.add(column);
         return result;
+    }
+
+    @NotNull
+    public Collection<UniqueConstraint> getUniqueConstraints() {
+        return unmodifiableCollection(uniqueConstraints);
     }
 
     @Override
@@ -85,9 +89,7 @@ public final class Table {
     public void addUniqueConstraint(@NotNull String constraintName, @NotNull List<Column> columnsInIndex) {
         if (columnsInIndex.isEmpty()) throw new IllegalArgumentException("empty list of columnsInIndex");
 
-        // TODO: create a proper multi-column constraint
-        for (Column column : columnsInIndex) {
-            column.unique = true;
-        }
+        uniqueConstraints.add(new UniqueConstraint(constraintName, columnsInIndex));
     }
+
 }

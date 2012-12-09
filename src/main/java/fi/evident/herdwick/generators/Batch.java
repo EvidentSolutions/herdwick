@@ -24,8 +24,8 @@ package fi.evident.herdwick.generators;
 
 import fi.evident.herdwick.model.Column;
 import fi.evident.herdwick.model.Table;
+import fi.evident.herdwick.model.UniqueConstraint;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,21 +65,44 @@ public final class Batch {
     }
 
     private boolean satisfiesUniqueConstraints(@NotNull List<?> row) {
-        // TODO: support multi-column constraints
-        for (int i = 0; i < columns.size(); i++) {
-            Column column = columns.get(i);
-            if (column.unique && !satisfiesUniqueConstraints(i, row.get(i)))
+        for (UniqueConstraint constraint : table.getUniqueConstraints())
+            if (!satisfiesUniqueConstraint(constraint, row))
                 return false;
-        }
+
         return true;
     }
 
-    private boolean satisfiesUniqueConstraints(int index, @Nullable Object value) {
-        for (List<?> row : data)
-            if (equal(row.get(index), value))
+    private boolean satisfiesUniqueConstraint(@NotNull UniqueConstraint constraint, @NotNull List<?> row) {
+        // If this constraint is for a column that we're not generating in this batch
+        // (e.g. constraint for auto-generated primary key), we're not interested.
+        if (!columns.containsAll(constraint.getColumns()))
+            return true;
+
+        int[] columnIndices = columnIndicesFor(constraint);
+
+        for (List<?> existingRow : data)
+            if (matches(existingRow, row, columnIndices))
                 return false;
 
         return true;
+    }
+
+    private static boolean matches(@NotNull List<?> row1, @NotNull List<?> row2, int[] indices) {
+        for (int index : indices)
+            if (!equal(row1.get(index), row2.get(index)))
+                return false;
+        return true;
+    }
+
+    private int[] columnIndicesFor(UniqueConstraint constraint) {
+        List<Column> constraintColumns = constraint.getColumns();
+        int[] indices = new int[constraintColumns.size()];
+
+        int i = 0;
+        for (Column column : constraintColumns)
+            indices[i++] = columns.indexOf(column);
+
+        return indices;
     }
 
     public boolean isReady() {

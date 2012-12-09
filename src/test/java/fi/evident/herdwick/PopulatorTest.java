@@ -25,7 +25,6 @@ package fi.evident.herdwick;
 import fi.evident.dalesbred.Database;
 import fi.evident.dalesbred.junit.TestDatabaseProvider;
 import fi.evident.dalesbred.junit.TransactionalTests;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -99,7 +98,6 @@ public class PopulatorTest {
     }
 
     @Test
-    @Ignore("this needs support for multi-column unique indices to work")
     public void multiColumnUnique() {
         db.update("drop table if exists foo");
         db.update("create table foo (id serial primary key, flag boolean not null, num varchar(10), unique (flag, num))");
@@ -111,7 +109,6 @@ public class PopulatorTest {
     }
 
     @Test
-    @Ignore("this needs support for multi-column unique indices to work")
     public void multipleForeignKeys() {
         db.update("drop table if exists user_account_group");
         db.update("drop table if exists user_account");

@@ -23,33 +23,36 @@
 package fi.evident.herdwick.model;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-public final class Column {
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.util.Collections.unmodifiableList;
+
+public final class UniqueConstraint {
 
     @NotNull
-    public final Table table;
+    private final String name;
 
     @NotNull
-    public final String name;
+    private final List<Column> columns;
 
-    public boolean nullable;
-    public int dataType;
-    public boolean autoIncrement;
-    public String typeName;
-    public int size;
-    public int decimalDigits;
+    UniqueConstraint(@NotNull String name, @NotNull List<Column> columns) {
+        if (name.isEmpty()) throw new IllegalArgumentException("empty name");
+        if (columns.isEmpty()) throw new IllegalArgumentException("no columns");
 
-    @Nullable
-    public Reference references;
-
-    Column(@NotNull Table table, @NotNull String name) {
-        this.table = table;
         this.name = name;
+        this.columns = unmodifiableList(new ArrayList<Column>(columns));
+    }
+
+    @NotNull
+    public List<Column> getColumns() {
+        return columns;
     }
 
     @Override
+    @NotNull
     public String toString() {
-        return table.getName().toString() + '.' + name;
+        return "unique constraint " + name + ' ' + columns;
     }
 }
