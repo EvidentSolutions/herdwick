@@ -22,6 +22,7 @@
 
 package fi.evident.herdwick.generators;
 
+import fi.evident.dalesbred.ResultTable;
 import fi.evident.herdwick.model.Column;
 import fi.evident.herdwick.model.Table;
 import fi.evident.herdwick.model.UniqueConstraint;
@@ -39,17 +40,21 @@ import static java.util.Collections.unmodifiableList;
 public final class Batch {
 
     @NotNull
-    private final List<List<?>> data = new ArrayList<List<?>>();
+    private final Table table;
 
     @NotNull
-    private final Table table;
+    private final ResultTable existingData;
+
+    @NotNull
+    private final List<List<?>> data = new ArrayList<List<?>>();
 
     @NotNull
     private final List<Column> columns;
     private final int requestedSize;
 
-    public Batch(@NotNull Table table, int requestedSize) {
+    public Batch(@NotNull Table table, @NotNull ResultTable existingData, int requestedSize) {
         this.table = table;
+        this.existingData = existingData;
         this.requestedSize = requestedSize;
         this.columns = table.getNonAutoIncrementColumns();
     }
@@ -69,7 +74,6 @@ public final class Batch {
     }
 
     private boolean satisfiesUniqueConstraints(@NotNull List<?> row) {
-        // TODO: currently we don't check uniqueness against data already existing in the table
         for (UniqueConstraint constraint : table.getUniqueConstraints())
             if (!satisfiesUniqueConstraint(constraint, row))
                 return false;
@@ -84,6 +88,10 @@ public final class Batch {
             return true;
 
         int[] columnIndices = columnIndicesFor(constraint);
+
+        for (ResultTable.ResultRow existingRow : existingData.getRows())
+            if (matches(existingRow.asList(), row, columnIndices))
+                return false;
 
         for (List<?> existingRow : data)
             if (matches(existingRow, row, columnIndices))

@@ -22,10 +22,7 @@
 
 package fi.evident.herdwick;
 
-import fi.evident.dalesbred.Database;
-import fi.evident.dalesbred.SQL;
-import fi.evident.dalesbred.TransactionCallback;
-import fi.evident.dalesbred.TransactionContext;
+import fi.evident.dalesbred.*;
 import fi.evident.herdwick.dialects.DefaultDialect;
 import fi.evident.herdwick.dialects.Dialect;
 import fi.evident.herdwick.dialects.JdbcMetadataProvider;
@@ -108,7 +105,8 @@ public final class Populator {
     @NotNull
     private Batch createBatch(@NotNull Name tableName, int size) {
         Table table = getTables().getTable(tableName);
-        Batch batch = new Batch(table, size);
+        ResultTable existingData = db.findTable(dialect.selectAll(table.getNonAutoIncrementColumns(), table));
+        Batch batch = new Batch(table, existingData, size);
 
         dataGenerator.prepare(batch);
 

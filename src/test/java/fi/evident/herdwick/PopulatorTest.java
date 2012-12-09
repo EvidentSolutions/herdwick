@@ -135,16 +135,28 @@ public class PopulatorTest {
 
     @Test
     public void multiColumnKeys() {
-        db.update("drop table if exists bar");
-        db.update("drop table if exists foo");
+        db.update("drop table if exists child");
+        db.update("drop table if exists parent");
 
-        db.update("create table foo (x int, y int, primary key (x,y))");
-        db.update("create table bar (id serial primary key, foo_x int, foo_y int, foreign key (foo_x,foo_y) references foo(x,y))");
+        db.update("create table parent (x int, y int, primary key (x,y))");
+        db.update("create table child (id serial primary key, parent_x int, parent_y int, foreign key (parent_x,parent_y) references parent(x,y))");
+
+        populator.populate("parent", 10);
+        populator.populate("child", 20);
+
+        assertThat(db.findUniqueInt("select count(*) from child"), is(20));
+    }
+
+    @Test
+    public void takeExistingDataIntoAccountWhenCheckingUniqueConstraints() {
+        db.update("drop table if exists foo");
+        db.update("create table foo (id serial primary key, flag boolean not null unique)");
+
+        db.update("insert into foo (flag) values (false)");
 
         populator.populate("foo", 10);
-        populator.populate("bar", 20);
 
-        assertThat(db.findUniqueInt("select count(*) from bar"), is(20));
+        assertThat(db.findUniqueInt("select count(*) from foo"), is(2));
     }
 
     @Test
