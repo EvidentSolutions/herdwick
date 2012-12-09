@@ -43,7 +43,8 @@ final class ReferenceGenerator implements Generator<Object> {
 
     public ReferenceGenerator(@NotNull Database db, @NotNull Column column) {
         Reference reference = column.getReference();
-        assert reference != null;
+        if (reference == null)
+            throw new IllegalArgumentException("column " + column + " has no foreign key reference");
 
         QueryBuilder qb = new QueryBuilder();
         qb.append("select ");
