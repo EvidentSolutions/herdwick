@@ -168,6 +168,9 @@ public final class DataGenerator {
                 }
             }
 
+            if (index != removedColumns.size())
+                throw new RuntimeException("could not find all required columns " + removedColumns + " in work-list");
+
             return indices;
         }
 
