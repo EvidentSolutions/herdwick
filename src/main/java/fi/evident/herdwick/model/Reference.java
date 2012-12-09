@@ -88,7 +88,7 @@ public final class Reference {
         return sb.toString();
     }
 
-    private static void appendColumns(StringBuilder sb, List<Column> columns) {
+    private static void appendColumns(@NotNull StringBuilder sb, @NotNull List<Column> columns) {
         for (int i = 0; i < columns.size(); i++) {
             if (i != 0)
                 sb.append(',');

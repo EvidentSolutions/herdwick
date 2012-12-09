@@ -50,6 +50,7 @@ public final class Column {
         this.name = name;
     }
 
+    @NotNull
     @Override
     public String toString() {
         return table.getName().toString() + '.' + name;

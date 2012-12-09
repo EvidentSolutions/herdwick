@@ -127,6 +127,7 @@ public final class Populator {
     private TableCollection getTables() {
         if (tables == null) {
             tables = db.withTransaction(new TransactionCallback<TableCollection>() {
+                @NotNull
                 @Override
                 public TableCollection execute(@NotNull TransactionContext tx) throws SQLException {
                     return metadataProvider.loadTables(tx.getConnection());
