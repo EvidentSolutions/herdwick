@@ -30,9 +30,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.logging.Logger;
 
 import static java.lang.Math.min;
@@ -64,7 +62,7 @@ public final class DataGenerator {
     public void prepare(@NotNull Batch batch) {
         int discarded = 0;
 
-        RowGenerator rowGenerator = createRowGenerator(batch.getColumns());
+        RowGenerator rowGenerator = createRowGenerator(batch.getIndexedColumns());
 
         while (!batch.isReady() && discarded < MAX_DISCARDED_ROWS) {
             List<Object> row = rowGenerator.createRow(random);
@@ -78,29 +76,45 @@ public final class DataGenerator {
     }
 
     @NotNull
-    private RowGenerator createRowGenerator(@NotNull List<Column> columns) {
+    private RowGenerator createRowGenerator(@NotNull List<IndexedColumn> columns) {
         List<ColumnSetGenerator> generators = createGenerators(columns);
 
         return new RowGenerator(columns.size(), generators);
     }
 
     @NotNull
-    private List<ColumnSetGenerator> createGenerators(@NotNull List<Column> columns) {
-        List<ColumnSetGenerator> result = new ArrayList<ColumnSetGenerator>(columns.size());
+    private List<ColumnSetGenerator> createGenerators(@NotNull List<IndexedColumn> columns) {
+        WorkList workList = new WorkList(columns);
 
-        int index = 0;
-        for (Column column : columns) {
-            Reference reference = getReference(column);
-            if (reference != null) {
-                result.add(new ReferenceGenerator(db, dialect, reference, index));
-            } else {
-                result.add(new SingleValueColumnSetGenerator(index, generatorFor(column)));
-            }
+        List<ColumnSetGenerator> generators = new ArrayList<ColumnSetGenerator>(columns.size());
 
-            index++;
+        // First go through all the foreign keys and try to build generators for them
+        while (true) {
+            ColumnSetGenerator referenceGenerator = extractReferenceGenerator(workList);
+            if (referenceGenerator != null)
+                generators.add(referenceGenerator);
+            else
+                break;
         }
 
-        return result;
+        // Then go through the remaining items
+        for (IndexedColumn column : workList)
+            generators.add(new SingleValueColumnSetGenerator(column.index, generatorFor(column.column)));
+
+        return generators;
+    }
+
+    @Nullable
+    private ReferenceGenerator extractReferenceGenerator(@NotNull WorkList workList) {
+        for (IndexedColumn column : workList) {
+            Reference reference = findReferenceWithSourceColumn(column.column);
+            if (reference != null) {
+                int[] indices = workList.removeColumnsAndReturnIndices(reference.getSourceColumns());
+                return new ReferenceGenerator(db, dialect, reference, indices);
+            }
+        }
+
+        return null;
     }
 
     @NotNull
@@ -119,15 +133,44 @@ public final class DataGenerator {
     }
 
     @Nullable
-    public static Reference getReference(@NotNull Column column) {
+    public static Reference findReferenceWithSourceColumn(@NotNull Column column) {
         for (Reference reference : column.getTable().getForeignKeys())
-            if (reference.getSourceColumns().contains(column)) {
-                if (reference.getSourceColumns().size() == 1)
-                    return reference;
-                else
-                    throw new UnsupportedOperationException("multi-column foreign keys are not supported");
-            }
+            if (reference.getSourceColumns().contains(column))
+                return reference;
 
         return null;
+    }
+
+
+    private static final class WorkList implements Iterable<IndexedColumn> {
+
+        @NotNull
+        private final LinkedList<IndexedColumn> workList;
+
+        public WorkList(List<IndexedColumn> columns) {
+            this.workList = new LinkedList<IndexedColumn>(columns);
+        }
+
+        int[] removeColumnsAndReturnIndices(List<Column> removedColumns) {
+            int[] indices = new int[removedColumns.size()];
+            int index = 0;
+
+            for (Column removedColumn : removedColumns) {
+                for (Iterator<IndexedColumn> it = workList.iterator(); it.hasNext(); ) {
+                    IndexedColumn column = it.next();
+                    if (column.column.equals(removedColumn)) {
+                        indices[index++] = column.index;
+                        it.remove();
+                    }
+                }
+            }
+
+            return indices;
+        }
+
+        @Override
+        public Iterator<IndexedColumn> iterator() {
+            return workList.iterator();
+        }
     }
 }

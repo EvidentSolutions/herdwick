@@ -41,14 +41,16 @@ final class ReferenceGenerator implements ColumnSetGenerator {
     @NotNull
     private final List<Object> ids;
 
-    public ReferenceGenerator(@NotNull Database db, @NotNull Dialect dialect, @NotNull Reference reference, int index) {
-        this.index = index;
+    public ReferenceGenerator(@NotNull Database db, @NotNull Dialect dialect, @NotNull Reference reference, int[] indices) {
+        if (indices.length != 1)
+            throw new UnsupportedOperationException("multi-column foreign keys are not supported");
+
+        assert indices.length == reference.getColumnCount();
+
+        this.index = indices[0];
 
         @SQL
         String sql = dialect.selectAll(reference.getTargetColumns(), reference.getTargetTable());
-
-        if (reference.getColumnCount() != 1)
-            throw new UnsupportedOperationException("multi-column foreign keys are not supported");
 
         // TODO: if there we multiple columns, return a tuple
         ids = db.findAll(Object.class, sql);
