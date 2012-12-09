@@ -45,7 +45,7 @@ public class PopulatorTest {
         db.update("drop table if exists foo");
         db.update("create table foo (name varchar(10) primary key)");
 
-        populator.populate("foo", 50);
+        assertThat(populator.populate("foo", 50), is(50));
 
         assertThat(count("foo"), is(50));
     }
@@ -128,7 +128,7 @@ public class PopulatorTest {
         db.update("drop table if exists table_with_only_two_possible_rows");
         db.update("create table table_with_only_two_possible_rows (flag boolean primary key)");
 
-        populator.populate("table_with_only_two_possible_rows", 3);
+        assertThat(populator.populate("table_with_only_two_possible_rows", 3), is(2));
 
         assertThat(count("table_with_only_two_possible_rows"), is(2));
     }
@@ -154,7 +154,7 @@ public class PopulatorTest {
 
         db.update("insert into foo (flag) values (false)");
 
-        populator.populate("foo", 10);
+        assertThat(populator.populate("foo", 10), is(1));
 
         assertThat(count("foo"), is(2));
     }

@@ -80,15 +80,15 @@ public final class Populator {
         return new Populator(Database.forUrlAndCredentials(url, username, password));
     }
 
-    public void populate(@NotNull String table, int count) {
-        populate(defaultSchema, table, count);
+    public int populate(@NotNull String table, int count) {
+        return populate(defaultSchema, table, count);
     }
 
-    public void populate(@Nullable String schema, @NotNull String table, int count) {
-        populate(new Name(schema, table), count);
+    public int populate(@Nullable String schema, @NotNull String table, int count) {
+        return populate(new Name(schema, table), count);
     }
 
-    public void populate(@NotNull Name tableName, int count) {
+    public int populate(@NotNull Name tableName, int count) {
         Batch batch = createBatch(tableName, count);
 
         @SQL
@@ -100,6 +100,8 @@ public final class Populator {
             for (List<?> row : batch.rowsToInsert())
                 db.update(query(insert, row));
         }
+
+        return batch.getCurrentSize();
     }
 
     @NotNull
