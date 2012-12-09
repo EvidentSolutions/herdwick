@@ -35,9 +35,6 @@ import java.util.List;
  */
 public final class DefaultDialect implements Dialect {
 
-    private static final String QUOTE_BEGIN = "\"";
-    private static final String QUOTE_CLOSE = "\"";
-
     @NotNull
     @Override
     public String createInsert(@NotNull Name table, @NotNull List<Column> columns) {
@@ -68,7 +65,6 @@ public final class DefaultDialect implements Dialect {
 
         appendName(sb, table.getName());
 
-
         return sb.toString();
     }
 
@@ -89,12 +85,13 @@ public final class DefaultDialect implements Dialect {
     }
 
     private static void appendName(@NotNull StringBuilder sb, @NotNull String name) {
-        sb.append(QUOTE_BEGIN).append(name).append(QUOTE_CLOSE);
+        sb.append('"').append(name).append('"');
     }
 
     private static void appendName(@NotNull StringBuilder sb, @NotNull Name tableName) {
-        if (tableName.getSchema() != null) {
-            appendName(sb, tableName.getSchema());
+        String schema = tableName.getSchema();
+        if (schema != null) {
+            appendName(sb, schema);
             sb.append('.');
         }
         appendName(sb, tableName.getName());
