@@ -62,7 +62,7 @@ public final class DataGenerator {
     public void prepare(@NotNull Batch batch) {
         int discarded = 0;
 
-        RowGenerator rowGenerator = createRowGenerator(batch.getIndexedColumns());
+        RowGenerator rowGenerator = createRowGenerator(batch.getColumns());
 
         while (!batch.isReady() && discarded < MAX_DISCARDED_ROWS) {
             List<Object> row = rowGenerator.createRow(random);
@@ -76,14 +76,14 @@ public final class DataGenerator {
     }
 
     @NotNull
-    private RowGenerator createRowGenerator(@NotNull List<IndexedColumn> columns) {
+    private RowGenerator createRowGenerator(@NotNull List<Column> columns) {
         List<ColumnSetGenerator> generators = createGenerators(columns);
 
         return new RowGenerator(columns.size(), generators);
     }
 
     @NotNull
-    private List<ColumnSetGenerator> createGenerators(@NotNull List<IndexedColumn> columns) {
+    private List<ColumnSetGenerator> createGenerators(@NotNull List<Column> columns) {
         WorkList workList = new WorkList(columns);
 
         List<ColumnSetGenerator> generators = new ArrayList<ColumnSetGenerator>(columns.size());
@@ -147,8 +147,10 @@ public final class DataGenerator {
         @NotNull
         private final LinkedList<IndexedColumn> workList;
 
-        public WorkList(@NotNull List<IndexedColumn> columns) {
-            this.workList = new LinkedList<IndexedColumn>(columns);
+        WorkList(@NotNull List<Column> columns) {
+            this.workList = new LinkedList<IndexedColumn>();
+            for (int i = 0; i < columns.size(); i++)
+                workList.add(new IndexedColumn(i, columns.get(i)));
         }
 
         @NotNull

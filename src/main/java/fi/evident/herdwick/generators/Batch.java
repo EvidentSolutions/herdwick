@@ -129,16 +129,6 @@ public final class Batch {
     }
 
     @NotNull
-    List<IndexedColumn> getIndexedColumns() {
-        List<IndexedColumn> result = new ArrayList<IndexedColumn>(columns.size());
-
-        for (int i = 0; i < columns.size(); i++)
-            result.add(new IndexedColumn(i, columns.get(i)));
-
-        return unmodifiableList(result);
-    }
-
-    @NotNull
     public Table getTable() {
         return table;
     }
