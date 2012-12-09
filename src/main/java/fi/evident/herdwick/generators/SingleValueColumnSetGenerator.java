@@ -22,43 +22,28 @@
 
 package fi.evident.herdwick.generators;
 
-import fi.evident.dalesbred.Database;
-import fi.evident.dalesbred.SQL;
-import fi.evident.herdwick.dialects.Dialect;
-import fi.evident.herdwick.model.Reference;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
 import java.util.Random;
 
 /**
- * Generates random foreign key references.
+ * A {@link ColumnSetGenerator} that wraps a {@link Generator} to provide
+ * value for column at given index.
  */
-final class ReferenceGenerator implements ColumnSetGenerator {
+final class SingleValueColumnSetGenerator implements ColumnSetGenerator {
 
     private final int index;
 
     @NotNull
-    private final List<Object> ids;
+    private final Generator<?> gen;
 
-    public ReferenceGenerator(@NotNull Database db, @NotNull Dialect dialect, @NotNull Reference reference, int index) {
+    SingleValueColumnSetGenerator(int index, @NotNull Generator<?> gen) {
+        this.gen = gen;
         this.index = index;
-
-        @SQL
-        String sql = dialect.selectAll(reference.getTargetColumns(), reference.getTargetTable());
-
-        if (reference.getColumnCount() != 1)
-            throw new UnsupportedOperationException("multi-column foreign keys are not supported");
-
-        // TODO: if there we multiple columns, return a tuple
-        ids = db.findAll(Object.class, sql);
-
-        if (ids.isEmpty())
-            throw new IllegalStateException("Can't construct a generator for columns " + reference.getSourceColumns() + ", because the referenced table " + reference.getTargetTable().getName() + " contains no rows.");
     }
 
     @Override
     public void generate(@NotNull Object[] row, @NotNull Random random) {
-        row[index] = ids.get(random.nextInt(ids.size()));
+        row[index] = gen.randomValue(random);
     }
 }

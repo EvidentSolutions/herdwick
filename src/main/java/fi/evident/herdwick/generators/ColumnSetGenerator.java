@@ -24,35 +24,11 @@ package fi.evident.herdwick.generators;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.Random;
 
-import static java.util.Arrays.asList;
-
 /**
- * Produces rows of values.
+ * Generates values for one or more columns of given row.
  */
-final class RowGenerator {
-
-    @NotNull
-    private final Collection<ColumnSetGenerator> columnSetGenerators;
-    private final int rowSize;
-
-    RowGenerator(int rowSize, @NotNull Collection<ColumnSetGenerator> columnGenerators) {
-        if (rowSize <= 0) throw new IllegalArgumentException("row-size is not positive: " + rowSize);
-        this.rowSize = rowSize;
-        this.columnSetGenerators = columnGenerators;
-    }
-
-    @NotNull
-    List<Object> createRow(@NotNull Random random) {
-        Object[] row = new Object[rowSize];
-
-        for (ColumnSetGenerator columnSetGenerator : columnSetGenerators)
-            columnSetGenerator.generate(row, random);
-
-        return asList(row);
-    }
-
+interface ColumnSetGenerator {
+    void generate(@NotNull Object[] row, @NotNull Random random);
 }

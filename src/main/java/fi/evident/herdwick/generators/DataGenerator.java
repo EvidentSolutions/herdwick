@@ -79,20 +79,32 @@ public final class DataGenerator {
 
     @NotNull
     private RowGenerator createRowGenerator(@NotNull List<Column> columns) {
-        List<Generator<?>> generators = new ArrayList<Generator<?>>(columns.size());
+        List<ColumnSetGenerator> generators = createGenerators(columns);
 
-        for (Column column : columns)
-            generators.add(generatorFor(column));
-
-        return new RowGenerator(generators);
+        return new RowGenerator(columns.size(), generators);
     }
 
     @NotNull
-    private Generator<?> generatorFor(@NotNull Column column) {
-        Reference reference = getReference(column);
-        if (reference != null)
-            return new ReferenceGenerator(db, dialect, reference);
+    private List<ColumnSetGenerator> createGenerators(@NotNull List<Column> columns) {
+        List<ColumnSetGenerator> result = new ArrayList<ColumnSetGenerator>(columns.size());
 
+        int index = 0;
+        for (Column column : columns) {
+            Reference reference = getReference(column);
+            if (reference != null) {
+                result.add(new ReferenceGenerator(db, dialect, reference, index));
+            } else {
+                result.add(new SingleValueColumnSetGenerator(index, generatorFor(column)));
+            }
+
+            index++;
+        }
+
+        return result;
+    }
+
+    @NotNull
+    private static Generator<?> generatorFor(@NotNull Column column) {
         switch (column.getDataType()) {
             case Types.VARCHAR:
                 return new SimpleStringGenerator(min(column.getSize(), 1000));
