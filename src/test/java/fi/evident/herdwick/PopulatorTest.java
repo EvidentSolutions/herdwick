@@ -33,7 +33,7 @@ import static org.junit.Assert.assertThat;
 
 public class PopulatorTest {
 
-    private final Database db = TestDatabaseProvider.databaseForProperties("postgresql-connection.properties");
+    private final Database db = TestDatabaseProvider.databaseForProperties("hsqldb-connection.properties");
 
     @Rule
     public final TransactionalTests transactionalTests = new TransactionalTests(db);
