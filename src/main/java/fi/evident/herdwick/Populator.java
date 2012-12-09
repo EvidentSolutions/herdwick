@@ -78,6 +78,11 @@ public final class Populator {
         this.defaultSchema = defaultSchema;
     }
 
+    @NotNull
+    public static Populator forUrlAndCredentials(@NotNull String url, @Nullable String username, @Nullable String password) {
+        return new Populator(Database.forUrlAndCredentials(url, username, password));
+    }
+
     public void populate(@NotNull String table, int count) {
         populate(defaultSchema, table, count);
     }
