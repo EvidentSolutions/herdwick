@@ -47,7 +47,7 @@ public class PopulatorTest {
 
         populator.populate("foo", 50);
 
-        assertThat(db.findUniqueInt("select count(*) from foo"), is(50));
+        assertThat(count("foo"), is(50));
     }
 
     @Test
@@ -57,7 +57,7 @@ public class PopulatorTest {
 
         populator.populate("foo", 50);
 
-        assertThat(db.findUniqueInt("select count(*) from foo"), is(50));
+        assertThat(count("foo"), is(50));
     }
 
     @Test
@@ -67,7 +67,7 @@ public class PopulatorTest {
 
         populator.populate("foo", 50);
 
-        assertThat(db.findUniqueInt("select count(*) from foo"), is(50));
+        assertThat(count("foo"), is(50));
     }
 
     @Test
@@ -77,7 +77,7 @@ public class PopulatorTest {
 
         populator.populate("foo", 50);
 
-        assertThat(db.findUniqueInt("select count(*) from foo"), is(50));
+        assertThat(count("foo"), is(50));
     }
 
     @Test
@@ -90,8 +90,8 @@ public class PopulatorTest {
         populator.populate("dept", 10);
         populator.populate("emp", 100);
 
-        assertThat(db.findUniqueInt("select count(*) from dept"), is(10));
-        assertThat(db.findUniqueInt("select count(*) from emp"), is(100));
+        assertThat(count("dept"), is(10));
+        assertThat(count("emp"), is(100));
     }
 
     @Test
@@ -101,7 +101,7 @@ public class PopulatorTest {
 
         populator.populate("foo", 50);
 
-        assertThat(db.findUniqueInt("select count(*) from foo"), is(50));
+        assertThat(count("foo"), is(50));
     }
 
     @Test
@@ -118,9 +118,9 @@ public class PopulatorTest {
         populator.populate("user_group", 10);
         populator.populate("user_account_group", 50);
 
-        assertThat(db.findUniqueInt("select count(*) from user_account"), is(10));
-        assertThat(db.findUniqueInt("select count(*) from user_group"), is(10));
-        assertThat(db.findUniqueInt("select count(*) from user_account_group"), is(50));
+        assertThat(count("user_account"), is(10));
+        assertThat(count("user_group"), is(10));
+        assertThat(count("user_account_group"), is(50));
     }
 
     @Test
@@ -130,7 +130,7 @@ public class PopulatorTest {
 
         populator.populate("table_with_only_two_possible_rows", 3);
 
-        assertThat(db.findUniqueInt("select count(*) from table_with_only_two_possible_rows"), is(2));
+        assertThat(count("table_with_only_two_possible_rows"), is(2));
     }
 
     @Test
@@ -144,7 +144,7 @@ public class PopulatorTest {
         populator.populate("parent", 10);
         populator.populate("child", 20);
 
-        assertThat(db.findUniqueInt("select count(*) from child"), is(20));
+        assertThat(count("child"), is(20));
     }
 
     @Test
@@ -156,7 +156,7 @@ public class PopulatorTest {
 
         populator.populate("foo", 10);
 
-        assertThat(db.findUniqueInt("select count(*) from foo"), is(2));
+        assertThat(count("foo"), is(2));
     }
 
     @Test
@@ -164,5 +164,9 @@ public class PopulatorTest {
         assertThat(populator.isBatchMode(), is(true));
         populator.setBatchMode(false);
         assertThat(populator.isBatchMode(), is(false));
+    }
+
+    private int count(String table) {
+        return db.findUniqueInt("select count(*) from " + table);
     }
 }
