@@ -63,8 +63,8 @@ public final class Populator {
     @NotNull
     private final Dialect dialect = new DefaultDialect();
 
-    @NotNull
-    private final TableCollection tables;
+    @Nullable
+    private TableCollection tables;
 
     private boolean batchMode = true;
 
@@ -76,12 +76,6 @@ public final class Populator {
         this.db = db;
         this.dataGenerator = new DataGenerator(db);
         this.defaultSchema = defaultSchema;
-        this.tables = db.withTransaction(new TransactionCallback<TableCollection>() {
-            @Override
-            public TableCollection execute(@NotNull TransactionContext tx) throws SQLException {
-                return metadataProvider.loadTables(tx.getConnection());
-            }
-        });
     }
 
     public void populate(@NotNull String table, int count) {
@@ -108,7 +102,7 @@ public final class Populator {
 
     @NotNull
     private Batch createBatch(@NotNull Name tableName, int size) {
-        Table table = tables.getTable(tableName);
+        Table table = getTables().getTable(tableName);
         Batch batch = new Batch(table, size);
 
         dataGenerator.prepare(batch);
@@ -122,5 +116,19 @@ public final class Populator {
 
     public void setBatchMode(boolean batchMode) {
         this.batchMode = batchMode;
+    }
+
+    @NotNull
+    private TableCollection getTables() {
+        if (tables == null) {
+            tables = db.withTransaction(new TransactionCallback<TableCollection>() {
+                @Override
+                public TableCollection execute(@NotNull TransactionContext tx) throws SQLException {
+                    return metadataProvider.loadTables(tx.getConnection());
+                }
+            });
+        }
+
+        return tables;
     }
 }

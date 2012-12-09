@@ -35,6 +35,8 @@ public class PopulatorTest {
 
     private final Database db = TestDatabaseProvider.databaseForProperties("hsqldb-connection.properties");
 
+    private final Populator populator = new Populator(db);
+
     @Rule
     public final TransactionalTests transactionalTests = new TransactionalTests(db);
 
@@ -43,7 +45,6 @@ public class PopulatorTest {
         db.update("drop table if exists foo");
         db.update("create table foo (name varchar(10) primary key)");
 
-        Populator populator = new Populator(db);
         populator.populate("foo", 50);
 
         assertThat(db.findUniqueInt("select count(*) from foo"), is(50));
@@ -54,7 +55,6 @@ public class PopulatorTest {
         db.update("drop table if exists foo");
         db.update("create table foo (name varchar(10) primary key, description varchar(20) not null, counter int not null)");
 
-        Populator populator = new Populator(db);
         populator.populate("foo", 50);
 
         assertThat(db.findUniqueInt("select count(*) from foo"), is(50));
@@ -65,7 +65,6 @@ public class PopulatorTest {
         db.update("drop table if exists foo");
         db.update("create table foo (id serial primary key, name varchar(10) not null unique)");
 
-        Populator populator = new Populator(db);
         populator.populate("foo", 50);
 
         assertThat(db.findUniqueInt("select count(*) from foo"), is(50));
@@ -76,7 +75,6 @@ public class PopulatorTest {
         db.update("drop table if exists foo");
         db.update("create table foo (id serial primary key, flag boolean not null)");
 
-        Populator populator = new Populator(db);
         populator.populate("foo", 50);
 
         assertThat(db.findUniqueInt("select count(*) from foo"), is(50));
@@ -89,7 +87,6 @@ public class PopulatorTest {
         db.update("create table dept (id serial primary key, name varchar(10) not null)");
         db.update("create table emp (id serial primary key, name varchar(10) not null, dept_id int references dept not null)");
 
-        Populator populator = new Populator(db);
         populator.populate("dept", 10);
         populator.populate("emp", 100);
 
@@ -102,7 +99,6 @@ public class PopulatorTest {
         db.update("drop table if exists foo");
         db.update("create table foo (id serial primary key, flag boolean not null, num varchar(10), unique (flag, num))");
 
-        Populator populator = new Populator(db);
         populator.populate("foo", 50);
 
         assertThat(db.findUniqueInt("select count(*) from foo"), is(50));
@@ -118,7 +114,6 @@ public class PopulatorTest {
         db.update("create table user_account (id serial primary key, name varchar(10) not null)");
         db.update("create table user_account_group (account_id int references user_account, group_id int references user_group, primary key (account_id, group_id))");
 
-        Populator populator = new Populator(db);
         populator.populate("user_account", 10);
         populator.populate("user_group", 10);
         populator.populate("user_account_group", 50);
