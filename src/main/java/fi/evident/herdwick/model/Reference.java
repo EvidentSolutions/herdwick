@@ -55,4 +55,22 @@ public final class Reference {
     public List<Column> getColumns() {
         return unmodifiableList(columns);
     }
+
+    @Override
+    @NotNull
+    public String toString() {
+        StringBuilder sb = new StringBuilder(60);
+        sb.append(table.getName());
+
+        sb.append(" (");
+
+        for (int i = 0; i < columns.size(); i++) {
+            if (i != 0)
+                sb.append(',');
+            sb.append(columns.get(i).getName());
+        }
+
+        sb.append(')');
+        return sb.toString();
+    }
 }
