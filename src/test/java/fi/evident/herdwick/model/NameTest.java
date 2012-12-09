@@ -20,18 +20,36 @@
  * THE SOFTWARE.
  */
 
-package fi.evident.herdwick.utils;
+package fi.evident.herdwick.model;
 
-import org.jetbrains.annotations.Nullable;
+import org.junit.Test;
 
-/**
- * Utilities for object-handling.
- */
-public final class ObjectUtils {
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assert.assertThat;
 
-    private ObjectUtils() { }
+public class NameTest {
 
-    public static boolean nullSafeEquals(@Nullable Object left, @Nullable Object right) {
-        return (left == null) ? right == null : left.equals(right);
+    @Test
+    public void nameComparisons() {
+        assertThat(new Name(null, "foo"), is(new Name(null, "foo")));
+        assertThat(new Name(null, "foo"), is(not(new Name(null, "bar"))));
+
+        assertThat(new Name("foo", "bar"), is(new Name("foo", "bar")));
+        assertThat(new Name("foo", "bar"), is(not(new Name("foo", "baz"))));
+        assertThat(new Name("foo", "bar"), is(not(new Name("baz", "bar"))));
+    }
+
+    @Test
+    public void nameComparisonsAreCaseInsensitive() {
+        assertThat(new Name(null, "foo"), is(new Name(null, "Foo")));
+        assertThat(new Name(null, "foo"), is(new Name(null, "FOO")));
+        assertThat(new Name("foo", "bar"), is(new Name("FOO", "BAR")));
+    }
+
+    @Test
+    public void stringRepresentationsOfName() {
+        assertThat(new Name(null, "foo").toString(), is("foo"));
+        assertThat(new Name("foo", "bar").toString(), is("foo.bar"));
     }
 }

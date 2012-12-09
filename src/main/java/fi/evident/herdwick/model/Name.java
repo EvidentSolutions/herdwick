@@ -52,6 +52,7 @@ public final class Name {
     }
 
     @Override
+    @NotNull
     public String toString() {
         if (schema != null)
             return schema + '.' + name;

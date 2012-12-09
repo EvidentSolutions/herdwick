@@ -23,6 +23,7 @@
 package fi.evident.herdwick.model;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,6 +61,7 @@ public final class Table {
         for (Column column : columns)
             if (!column.isAutoIncrement())
                 result.add(column);
+
         return unmodifiableList(result);
     }
 
@@ -76,6 +78,8 @@ public final class Table {
 
     @NotNull
     public Column addColumn(@NotNull String columnName) {
+        if (findColumn(columnName) != null)
+            throw new IllegalArgumentException("column " + columnName + " is already present in table " + name);
         Column column = new Column(this, columnName);
         columns.add(column);
         return column;
@@ -83,17 +87,23 @@ public final class Table {
 
     @NotNull
     public Column getColumn(@NotNull String columnName) {
+        Column column = findColumn(columnName);
+        if (column != null)
+            return column;
+        else
+            throw new IllegalArgumentException("no such column: '" + columnName + "' in table " + name);
+    }
+
+    @Nullable
+    private Column findColumn(@NotNull String columnName) {
         for (Column column : columns)
             if (columnName.equalsIgnoreCase(column.getName()))
                 return column;
 
-        throw new IllegalArgumentException("no such column: '" + columnName + "' in table " + name);
+        return null;
     }
 
-    public void addUniqueConstraint(@NotNull String constraintName, @NotNull List<Column> columnsInIndex) {
-        if (columnsInIndex.isEmpty()) throw new IllegalArgumentException("empty list of columnsInIndex");
-
-        uniqueConstraints.add(new UniqueConstraint(constraintName, columnsInIndex));
+    public void addUniqueConstraint(@NotNull UniqueConstraint constraint) {
+        uniqueConstraints.add(constraint);
     }
-
 }

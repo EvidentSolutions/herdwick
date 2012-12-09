@@ -22,50 +22,37 @@
 
 package fi.evident.herdwick.model;
 
-import org.jetbrains.annotations.NotNull;
+import org.junit.Test;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-import static java.util.Collections.unmodifiableList;
+import static java.util.Collections.singletonList;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
-/**
- * Represents a unique constraint in the database.
- */
-public final class UniqueConstraint {
+public class UniqueConstraintTest {
 
-    @NotNull
-    private final String name;
+    @Test
+    public void construction() {
+        Table table = new Table(new Name(null, "my-table"));
+        List<Column> columns = singletonList(table.addColumn("my-column"));
 
-    @NotNull
-    private final List<Column> columns;
+        UniqueConstraint constraint = new UniqueConstraint("my-name", columns);
 
-    public UniqueConstraint(@NotNull String name, @NotNull List<Column> columns) {
-        if (name.isEmpty()) throw new IllegalArgumentException("empty name");
-        if (columns.isEmpty()) throw new IllegalArgumentException("no columns");
-
-        this.name = name;
-        this.columns = unmodifiableList(new ArrayList<Column>(columns));
+        assertThat(constraint.getName(), is("my-name"));
+        assertThat(constraint.getColumns(), is(columns));
+        assertThat(constraint.getTable(), is(table));
     }
 
-    @NotNull
-    public String getName() {
-        return name;
+    @Test(expected = IllegalArgumentException.class)
+    public void cantAddUniqueConstraintWithoutColumns() {
+        new UniqueConstraint("invalid-constraint", Collections.<Column>emptyList());
     }
 
-    @NotNull
-    public Table getTable() {
-        return columns.get(0).getTable();
-    }
-
-    @NotNull
-    public List<Column> getColumns() {
-        return columns;
-    }
-
-    @Override
-    @NotNull
-    public String toString() {
-        return "unique constraint " + name + ' ' + columns;
+    @Test(expected = IllegalArgumentException.class)
+    public void cantAddUniqueConstraintWithoutName() {
+        Table table = new Table(new Name(null, "foo"));
+        new UniqueConstraint("", singletonList(table.addColumn("bar")));
     }
 }

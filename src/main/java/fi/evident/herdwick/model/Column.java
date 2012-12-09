@@ -39,7 +39,9 @@ public final class Column {
     private boolean nullable;
     private int dataType;
     private boolean autoIncrement;
-    private String typeName;
+
+    @NotNull
+    private String typeName = "<unknown>";
 
     private int size;
     private int decimalDigits;
@@ -73,6 +75,11 @@ public final class Column {
         return name;
     }
 
+    @NotNull
+    public Table getTable() {
+        return table;
+    }
+
     public int getSize() {
         return size;
     }
@@ -90,11 +97,12 @@ public final class Column {
         this.decimalDigits = decimalDigits;
     }
 
+    @NotNull
     public String getTypeName() {
         return typeName;
     }
 
-    public void setTypeName(String typeName) {
+    public void setTypeName(@NotNull String typeName) {
         this.typeName = typeName;
     }
 

@@ -30,7 +30,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-import static fi.evident.herdwick.utils.ObjectUtils.equal;
+import static fi.evident.herdwick.utils.ObjectUtils.nullSafeEquals;
 import static java.util.Collections.unmodifiableList;
 
 /**
@@ -38,6 +38,7 @@ import static java.util.Collections.unmodifiableList;
  */
 public final class Batch {
 
+    @NotNull
     private final List<List<?>> data = new ArrayList<List<?>>();
 
     @NotNull
@@ -91,14 +92,15 @@ public final class Batch {
         return true;
     }
 
-    private static boolean matches(@NotNull List<?> row1, @NotNull List<?> row2, int[] indices) {
+    private static boolean matches(@NotNull List<?> row1, @NotNull List<?> row2, @NotNull int[] indices) {
         for (int index : indices)
-            if (!equal(row1.get(index), row2.get(index)))
+            if (!nullSafeEquals(row1.get(index), row2.get(index)))
                 return false;
         return true;
     }
 
-    private int[] columnIndicesFor(UniqueConstraint constraint) {
+    @NotNull
+    private int[] columnIndicesFor(@NotNull UniqueConstraint constraint) {
         List<Column> constraintColumns = constraint.getColumns();
         int[] indices = new int[constraintColumns.size()];
 

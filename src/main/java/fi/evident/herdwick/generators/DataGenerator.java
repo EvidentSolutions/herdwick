@@ -83,7 +83,7 @@ public final class DataGenerator {
     }
 
     @NotNull
-    private Generator<?> generatorFor(Column column) {
+    private Generator<?> generatorFor(@NotNull Column column) {
         if (column.getReference() != null)
             return new ReferenceGenerator(db, dialect, column);
 

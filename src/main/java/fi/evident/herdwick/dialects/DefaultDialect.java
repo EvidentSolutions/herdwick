@@ -72,7 +72,7 @@ public final class DefaultDialect implements Dialect {
         return sb.toString();
     }
 
-    private static void appendCommaSeparatorColumns(StringBuilder sb, List<Column> columns) {
+    private static void appendCommaSeparatorColumns(@NotNull StringBuilder sb, @NotNull List<Column> columns) {
         for (int i = 0, size = columns.size(); i < size; i++) {
             if (i != 0)
                 sb.append(',');

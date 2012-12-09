@@ -84,6 +84,7 @@ public final class JdbcMetadataProvider implements MetadataProvider {
         }
     }
 
+    @NotNull
     private static List<Name> loadTableNames(@NotNull DatabaseMetaData metaData) throws SQLException {
         ResultSet rs = metaData.getTables(null, null, null, new String[] { "TABLE" });
         try {
@@ -121,7 +122,7 @@ public final class JdbcMetadataProvider implements MetadataProvider {
         }
 
         for (Map.Entry<String, List<Column>> entry : uniqueIndices.entrySet())
-            table.addUniqueConstraint(entry.getKey(), entry.getValue());
+            table.addUniqueConstraint(new UniqueConstraint(entry.getKey(), entry.getValue()));
     }
 
     private static void createColumns(@NotNull Table table, @NotNull DatabaseMetaData databaseMetaData) throws SQLException {
