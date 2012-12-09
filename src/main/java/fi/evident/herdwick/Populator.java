@@ -23,6 +23,7 @@
 package fi.evident.herdwick;
 
 import fi.evident.dalesbred.Database;
+import fi.evident.dalesbred.SQL;
 import fi.evident.dalesbred.TransactionCallback;
 import fi.evident.dalesbred.TransactionContext;
 import fi.evident.herdwick.dialects.DefaultDialect;
@@ -38,6 +39,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.sql.SQLException;
+import java.util.List;
+
+import static fi.evident.dalesbred.SqlQuery.query;
 
 public final class Populator {
 
@@ -58,6 +62,8 @@ public final class Populator {
 
     @NotNull
     private final TableCollection tables;
+
+    private boolean batchMode = true;
 
     public Populator(@NotNull Database db) {
         this(db, "public");
@@ -86,7 +92,15 @@ public final class Populator {
     public void populate(@NotNull Name tableName, int count) {
         Batch batch = createBatch(tableName, count);
 
-        db.updateBatch(dialect.createInsert(batch.getTable().getName(), batch.getColumns()), batch.rowsToInsert());
+        @SQL
+        String insert = dialect.createInsert(batch.getTable().getName(), batch.getColumns());
+
+        if (batchMode) {
+            db.updateBatch(insert, batch.rowsToInsert());
+        } else {
+            for (List<?> row : batch.rowsToInsert())
+                db.update(query(insert, row));
+        }
     }
 
     @NotNull
@@ -97,5 +111,13 @@ public final class Populator {
         dataGenerator.prepare(batch);
 
         return batch;
+    }
+
+    public boolean isBatchMode() {
+        return batchMode;
+    }
+
+    public void setBatchMode(boolean batchMode) {
+        this.batchMode = batchMode;
     }
 }
