@@ -24,6 +24,9 @@ package fi.evident.herdwick.utils;
 
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Utilities for object-handling.
+ */
 public final class ObjectUtils {
 
     private ObjectUtils() { }

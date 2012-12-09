@@ -25,6 +25,9 @@ package fi.evident.herdwick.model;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Possibly qualified database name.
+ */
 public final class Name {
 
     @Nullable

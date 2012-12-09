@@ -28,6 +28,9 @@ import org.jetbrains.annotations.NotNull;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+/**
+ * Provides Database metadata.
+ */
 public interface MetadataProvider {
 
     @NotNull

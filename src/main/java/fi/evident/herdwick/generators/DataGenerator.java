@@ -31,6 +31,9 @@ import java.util.*;
 
 import static java.lang.Math.min;
 
+/**
+ * Facade responsible for populating {@link Batch} with generated data.
+ */
 public final class DataGenerator {
 
     @NotNull
@@ -76,7 +79,7 @@ public final class DataGenerator {
 
     @NotNull
     private Generator<?> generatorFor(Column column) {
-        if (column.references != null)
+        if (column.getReference() != null)
             return new ReferenceGenerator(db, column);
 
         switch (column.dataType) {

@@ -29,6 +29,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * A default implementation of {@link Dialect} that should be fine
+ * for most databases.
+ */
 public final class DefaultDialect implements Dialect {
 
     @NotNull

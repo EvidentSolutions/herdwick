@@ -33,6 +33,9 @@ import java.util.List;
 import static fi.evident.herdwick.utils.ObjectUtils.equal;
 import static java.util.Collections.unmodifiableList;
 
+/**
+ * Represents a single batch of data to be generated for insertion into database.
+ */
 public final class Batch {
 
     private final List<List<?>> data = new ArrayList<List<?>>();
@@ -65,6 +68,7 @@ public final class Batch {
     }
 
     private boolean satisfiesUniqueConstraints(@NotNull List<?> row) {
+        // TODO: currently we don't check uniqueness against data already existing in the table
         for (UniqueConstraint constraint : table.getUniqueConstraints())
             if (!satisfiesUniqueConstraint(constraint, row))
                 return false;

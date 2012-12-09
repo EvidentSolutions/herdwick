@@ -29,6 +29,9 @@ import java.util.List;
 
 import static java.util.Collections.unmodifiableList;
 
+/**
+ * Represents a unique constraint in the database.
+ */
 public final class UniqueConstraint {
 
     @NotNull

@@ -33,13 +33,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-public final class ReferenceGenerator implements Generator<Object> {
+/**
+ * Generates random foreign key references.
+ */
+final class ReferenceGenerator implements Generator<Object> {
 
     @NotNull
     private final List<Object> ids;
 
     public ReferenceGenerator(@NotNull Database db, @NotNull Column column) {
-        Reference reference = column.references;
+        Reference reference = column.getReference();
         assert reference != null;
 
         QueryBuilder qb = new QueryBuilder();

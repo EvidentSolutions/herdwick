@@ -27,6 +27,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Random;
 
+/**
+ * Generates random integers.
+ */
 final class SimpleIntegerGenerator implements Generator<Integer> {
 
     @Nullable

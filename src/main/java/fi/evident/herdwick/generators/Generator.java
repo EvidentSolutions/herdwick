@@ -27,6 +27,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Random;
 
+/**
+ * Interface for classes that are capable of generating random data.
+ */
 public interface Generator<T> {
 
     @Nullable

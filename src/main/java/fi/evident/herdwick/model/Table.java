@@ -30,6 +30,9 @@ import java.util.List;
 
 import static java.util.Collections.unmodifiableCollection;
 
+/**
+ * Represents a table in the database.
+ */
 public final class Table {
 
     @NotNull

@@ -43,6 +43,9 @@ import java.util.List;
 
 import static fi.evident.dalesbred.SqlQuery.query;
 
+/**
+ * Facade for the functionality of the application.
+ */
 public final class Populator {
 
     @NotNull

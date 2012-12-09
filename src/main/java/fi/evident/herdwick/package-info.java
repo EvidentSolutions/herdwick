@@ -20,41 +20,7 @@
  * THE SOFTWARE.
  */
 
-package fi.evident.herdwick.generators;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.Random;
-
 /**
- * Generates random strings.
+ * Main package of the application. Contains most of the types needed in normal use.
  */
-final class SimpleStringGenerator implements Generator<String> {
-
-    private final int maxLength;
-
-    @NotNull
-    private final String alphabet;
-
-    SimpleStringGenerator(int maxLength) {
-        this(maxLength, "abcdefghijklmnopqrstuvwxyz0123456789-_ ");
-    }
-
-    SimpleStringGenerator(int maxLength, @NotNull String alphabet) {
-        this.maxLength = maxLength;
-        this.alphabet = alphabet;
-    }
-
-    @Nullable
-    @Override
-    public String randomValue(@NotNull Random random) {
-        int length = random.nextInt(maxLength);
-        StringBuilder sb = new StringBuilder(length);
-
-        for (int i = 0; i < length; i++)
-            sb.append(alphabet.charAt(random.nextInt(alphabet.length())));
-
-        return sb.toString();
-    }
-}
+package fi.evident.herdwick;

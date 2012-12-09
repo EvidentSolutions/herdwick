@@ -29,6 +29,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+/**
+ * Generates SQL statements that populator needs.
+ */
 public interface Dialect {
 
     @SQL

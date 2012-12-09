@@ -27,6 +27,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Random;
 
+/**
+ * Generates random booleans.
+ */
 final class SimpleBooleanGenerator implements Generator<Boolean> {
 
     @Nullable

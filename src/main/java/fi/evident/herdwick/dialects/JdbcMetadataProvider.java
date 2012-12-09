@@ -36,6 +36,10 @@ import java.util.Map;
 
 import static java.util.Collections.singletonList;
 
+/**
+ * Provides database metadata using JDBC {@link DatabaseMetaData}.
+ * Should work for for reasonable JDBC-drivers.
+ */
 public final class JdbcMetadataProvider implements MetadataProvider {
 
     @Override
@@ -70,11 +74,9 @@ public final class JdbcMetadataProvider implements MetadataProvider {
                 // TODO: support multi-column reference
                 Table referencedTable = tables.getTable(name);
                 Column referencedColumn = referencedTable.getColumn(pkColumn);
+                Reference reference = new Reference(referencedTable, singletonList(referencedColumn));
 
-                Column targetColumn = table.getColumn(fkColumn);
-                if (targetColumn.references != null)
-                    throw new IllegalStateException("multiple references to " + table);
-                targetColumn.references = new Reference(referencedTable, singletonList(referencedColumn));
+                table.getColumn(fkColumn).setReference(reference);
             }
 
         } finally {
