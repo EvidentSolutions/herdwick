@@ -122,4 +122,11 @@ public class PopulatorTest {
         assertThat(db.findUniqueInt("select count(*) from user_group"), is(10));
         assertThat(db.findUniqueInt("select count(*) from user_account_group"), is(50));
     }
+
+    @Test
+    public void batchModeFlag() {
+        assertThat(populator.isBatchMode(), is(true));
+        populator.setBatchMode(false);
+        assertThat(populator.isBatchMode(), is(false));
+    }
 }

@@ -2,6 +2,7 @@
   <dictionary name="komu">
     <words>
       <w>abcdefghijklmnopqrstuvwxyz</w>
+      <w>booleans</w>
       <w>fkcolumn</w>
       <w>herdwick</w>
       <w>nullable</w>
