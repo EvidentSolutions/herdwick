@@ -34,8 +34,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.Collections.singletonList;
-
 /**
  * Provides database metadata using JDBC {@link DatabaseMetaData}.
  * Should work for for reasonable JDBC-drivers.
@@ -66,18 +64,27 @@ public final class JdbcMetadataProvider implements MetadataProvider {
     private static void createForeignKeys(@NotNull TableCollection tables, @NotNull Table table, @NotNull DatabaseMetaData metaData) throws SQLException {
         ResultSet rs = metaData.getImportedKeys(null, table.getName().getSchema(), table.getName().getName());
         try {
+            Map<String,Reference.Builder> referencesBuilders = new HashMap<String, Reference.Builder>();
             while (rs.next()) {
+                String foreignKeyName = rs.getString("FK_NAME");
                 Name name = new Name(rs.getString("PKTABLE_SCHEM"), rs.getString("PKTABLE_NAME"));
                 String pkColumn = rs.getString("PKCOLUMN_NAME");
                 String fkColumn = rs.getString("FKCOLUMN_NAME");
 
-                // TODO: support multi-column reference
-                Table referencedTable = tables.getTable(name);
-                Column referencedColumn = referencedTable.getColumn(pkColumn);
-                Reference reference = new Reference(referencedTable, singletonList(referencedColumn));
+                Column source = table.getColumn(fkColumn);
+                Column target = tables.getTable(name).getColumn(pkColumn);
 
-                table.getColumn(fkColumn).setReference(reference);
+                Reference.Builder reference = referencesBuilders.get(foreignKeyName);
+                if (reference == null) {
+                    reference = Reference.builder(source, target);
+                    referencesBuilders.put(foreignKeyName, reference);
+                } else {
+                    reference.addColumn(source, target);
+                }
             }
+
+            for (Reference.Builder builder : referencesBuilders.values())
+                table.addForeignKey(builder.build());
 
         } finally {
             rs.close();

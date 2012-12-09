@@ -46,6 +46,9 @@ public final class Table {
     @NotNull
     private final List<UniqueConstraint> uniqueConstraints = new ArrayList<UniqueConstraint>();
 
+    @NotNull
+    private final List<Reference> foreignKeys = new ArrayList<Reference>();
+
     Table(@NotNull Name name) {
         this.name = name;
     }
@@ -68,6 +71,11 @@ public final class Table {
     @NotNull
     public Collection<UniqueConstraint> getUniqueConstraints() {
         return unmodifiableCollection(uniqueConstraints);
+    }
+
+    @NotNull
+    public Collection<Reference> getForeignKeys() {
+        return unmodifiableCollection(foreignKeys);
     }
 
     @Override
@@ -105,5 +113,9 @@ public final class Table {
 
     public void addUniqueConstraint(@NotNull UniqueConstraint constraint) {
         uniqueConstraints.add(constraint);
+    }
+
+    public void addForeignKey(@NotNull Reference reference) {
+        foreignKeys.add(reference);
     }
 }

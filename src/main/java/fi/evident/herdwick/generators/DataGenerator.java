@@ -25,7 +25,9 @@ package fi.evident.herdwick.generators;
 import fi.evident.dalesbred.Database;
 import fi.evident.herdwick.dialects.Dialect;
 import fi.evident.herdwick.model.Column;
+import fi.evident.herdwick.model.Reference;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.sql.Types;
 import java.util.ArrayList;
@@ -87,8 +89,9 @@ public final class DataGenerator {
 
     @NotNull
     private Generator<?> generatorFor(@NotNull Column column) {
-        if (column.getReference() != null)
-            return new ReferenceGenerator(db, dialect, column);
+        Reference reference = getReference(column);
+        if (reference != null)
+            return new ReferenceGenerator(db, dialect, reference);
 
         switch (column.getDataType()) {
             case Types.VARCHAR:
@@ -101,5 +104,18 @@ public final class DataGenerator {
             default:
                 throw new IllegalArgumentException("could not find generator for column " + column + " of type: " + column.getDataType() + " (" + column.getTypeName() + ')');
         }
+    }
+
+    @Nullable
+    public static Reference getReference(@NotNull Column column) {
+        for (Reference reference : column.getTable().getForeignKeys())
+            if (reference.getSourceColumns().contains(column)) {
+                if (reference.getSourceColumns().size() == 1)
+                    return reference;
+                else
+                    throw new UnsupportedOperationException("multi-column foreign keys are not supported");
+            }
+
+        return null;
     }
 }

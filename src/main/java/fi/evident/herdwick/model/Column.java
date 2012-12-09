@@ -23,7 +23,6 @@
 package fi.evident.herdwick.model;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Represents a column of a {@link Table}.
@@ -46,23 +45,9 @@ public final class Column {
     private int size;
     private int decimalDigits;
 
-    @Nullable
-    private Reference reference;
-
     Column(@NotNull Table table, @NotNull String name) {
         this.table = table;
         this.name = name;
-    }
-
-    @Nullable
-    public Reference getReference() {
-        return reference;
-    }
-
-    public void setReference(@Nullable Reference reference) {
-        if (this.reference != null)
-            throw new IllegalStateException("reference already initialized");
-        this.reference = reference;
     }
 
     @Override

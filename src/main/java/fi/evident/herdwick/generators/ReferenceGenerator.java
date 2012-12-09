@@ -25,7 +25,6 @@ package fi.evident.herdwick.generators;
 import fi.evident.dalesbred.Database;
 import fi.evident.dalesbred.SQL;
 import fi.evident.herdwick.dialects.Dialect;
-import fi.evident.herdwick.model.Column;
 import fi.evident.herdwick.model.Reference;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -41,22 +40,18 @@ final class ReferenceGenerator implements Generator<Object> {
     @NotNull
     private final List<Object> ids;
 
-    public ReferenceGenerator(@NotNull Database db, @NotNull Dialect dialect, @NotNull Column column) {
-        Reference reference = column.getReference();
-        if (reference == null)
-            throw new IllegalArgumentException("column " + column + " has no foreign key reference");
-
+    public ReferenceGenerator(@NotNull Database db, @NotNull Dialect dialect, @NotNull Reference reference) {
         @SQL
-        String sql = dialect.selectAll(reference.getColumns(), reference.getTable());
+        String sql = dialect.selectAll(reference.getTargetColumns(), reference.getTargetTable());
 
-        if (reference.getColumns().size() != 1)
+        if (reference.getColumnCount() != 1)
             throw new UnsupportedOperationException("multi-column foreign keys are not supported");
 
         // TODO: if there we multiple columns, return a tuple
         ids = db.findAll(Object.class, sql);
 
         if (ids.isEmpty())
-            throw new IllegalStateException("Can't construct a generator for column " + column + ", because the referenced table " + reference.getTable().getName() + " contains no rows.");
+            throw new IllegalStateException("Can't construct a generator for columns " + reference.getSourceColumns() + ", because the referenced table " + reference.getTargetTable().getName() + " contains no rows.");
     }
 
     @Nullable

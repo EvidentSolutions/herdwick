@@ -24,6 +24,7 @@ package fi.evident.herdwick.model;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Collections.unmodifiableList;
@@ -34,43 +35,92 @@ import static java.util.Collections.unmodifiableList;
 public final class Reference {
 
     @NotNull
-    private final Table table;
+    private final List<Column> sourceColumns;
 
     @NotNull
-    private final List<Column> columns;
+    private final List<Column> targetColumns;
 
-    public Reference(@NotNull Table table, @NotNull List<Column> columns) {
-        if (columns.isEmpty()) throw new IllegalArgumentException("no columns for reference");
+    private Reference(@NotNull List<Column> sourceColumns, @NotNull List<Column> targetColumns) {
+        assert !sourceColumns.isEmpty() && !targetColumns.isEmpty() && sourceColumns.size() == targetColumns.size();
 
-        this.table = table;
-        this.columns = columns;
+        this.sourceColumns = sourceColumns;
+        this.targetColumns = targetColumns;
+    }
+
+    public int getColumnCount() {
+        return sourceColumns.size();
     }
 
     @NotNull
-    public Table getTable() {
-        return table;
+    public Table getSourceTable() {
+        return sourceColumns.get(0).getTable();
     }
 
     @NotNull
-    public List<Column> getColumns() {
-        return unmodifiableList(columns);
+    public List<Column> getSourceColumns() {
+        return unmodifiableList(sourceColumns);
+    }
+
+    @NotNull
+    public Table getTargetTable() {
+        return targetColumns.get(0).getTable();
+    }
+
+    @NotNull
+    public List<Column> getTargetColumns() {
+        return unmodifiableList(targetColumns);
     }
 
     @Override
     @NotNull
     public String toString() {
-        StringBuilder sb = new StringBuilder(60);
-        sb.append(table.getName());
+        StringBuilder sb = new StringBuilder(100);
 
+        sb.append(getSourceTable().getName());
         sb.append(" (");
+        appendColumns(sb, sourceColumns);
+        sb.append(") references ");
+        sb.append(getTargetTable().getName());
+        sb.append(" (");
+        appendColumns(sb, targetColumns);
+        sb.append(')');
 
+        return sb.toString();
+    }
+
+    private static void appendColumns(StringBuilder sb, List<Column> columns) {
         for (int i = 0; i < columns.size(); i++) {
             if (i != 0)
                 sb.append(',');
             sb.append(columns.get(i).getName());
         }
+    }
 
-        sb.append(')');
-        return sb.toString();
+    @NotNull
+    public static Builder builder(@NotNull Column source, @NotNull Column target) {
+        return new Builder(source, target);
+    }
+
+    public static final class Builder {
+
+        @NotNull
+        private final List<Column> sources = new ArrayList<Column>();
+
+        @NotNull
+        private final List<Column> targets = new ArrayList<Column>();
+
+        private Builder(@NotNull Column source, @NotNull Column target) {
+            addColumn(source, target);
+        }
+
+        public void addColumn(@NotNull Column source, @NotNull Column target) {
+            sources.add(source);
+            targets.add(target);
+        }
+
+        @NotNull
+        public Reference build() {
+            return new Reference(sources, targets);
+        }
     }
 }
