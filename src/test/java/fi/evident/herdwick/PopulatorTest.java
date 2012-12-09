@@ -25,7 +25,6 @@ package fi.evident.herdwick;
 import fi.evident.dalesbred.Database;
 import fi.evident.dalesbred.junit.TestDatabaseProvider;
 import fi.evident.dalesbred.junit.TransactionalTests;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -135,7 +134,6 @@ public class PopulatorTest {
     }
 
     @Test
-    @Ignore("multi-column support is not implemented yet")
     public void multiColumnKeys() {
         db.update("drop table if exists bar");
         db.update("drop table if exists foo");

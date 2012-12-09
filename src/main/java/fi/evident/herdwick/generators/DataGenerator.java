@@ -147,11 +147,12 @@ public final class DataGenerator {
         @NotNull
         private final LinkedList<IndexedColumn> workList;
 
-        public WorkList(List<IndexedColumn> columns) {
+        public WorkList(@NotNull List<IndexedColumn> columns) {
             this.workList = new LinkedList<IndexedColumn>(columns);
         }
 
-        int[] removeColumnsAndReturnIndices(List<Column> removedColumns) {
+        @NotNull
+        int[] removeColumnsAndReturnIndices(@NotNull List<Column> removedColumns) {
             int[] indices = new int[removedColumns.size()];
             int index = 0;
 
@@ -168,6 +169,7 @@ public final class DataGenerator {
             return indices;
         }
 
+        @NotNull
         @Override
         public Iterator<IndexedColumn> iterator() {
             return workList.iterator();

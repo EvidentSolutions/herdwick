@@ -23,6 +23,7 @@
 package fi.evident.herdwick.generators;
 
 import fi.evident.dalesbred.Database;
+import fi.evident.dalesbred.ResultTable;
 import fi.evident.dalesbred.SQL;
 import fi.evident.herdwick.dialects.Dialect;
 import fi.evident.herdwick.model.Reference;
@@ -36,24 +37,21 @@ import java.util.Random;
  */
 final class ReferenceGenerator implements ColumnSetGenerator {
 
-    private final int index;
+    @NotNull
+    private final int[] indices;
 
     @NotNull
-    private final List<Object> ids;
+    private final List<ResultTable.ResultRow> ids;
 
-    public ReferenceGenerator(@NotNull Database db, @NotNull Dialect dialect, @NotNull Reference reference, int[] indices) {
-        if (indices.length != 1)
-            throw new UnsupportedOperationException("multi-column foreign keys are not supported");
-
+    ReferenceGenerator(@NotNull Database db, @NotNull Dialect dialect, @NotNull Reference reference, @NotNull int[] indices) {
         assert indices.length == reference.getColumnCount();
 
-        this.index = indices[0];
+        this.indices = indices;
 
         @SQL
         String sql = dialect.selectAll(reference.getTargetColumns(), reference.getTargetTable());
 
-        // TODO: if there we multiple columns, return a tuple
-        ids = db.findAll(Object.class, sql);
+        ids = db.findTable(sql).getRows();
 
         if (ids.isEmpty())
             throw new IllegalStateException("Can't construct a generator for columns " + reference.getSourceColumns() + ", because the referenced table " + reference.getTargetTable().getName() + " contains no rows.");
@@ -61,6 +59,9 @@ final class ReferenceGenerator implements ColumnSetGenerator {
 
     @Override
     public void generate(@NotNull Object[] row, @NotNull Random random) {
-        row[index] = ids.get(random.nextInt(ids.size()));
+        ResultTable.ResultRow id = ids.get(random.nextInt(ids.size()));
+
+        for (int i = 0; i < indices.length; i++)
+            row[indices[i]] = id.get(i);
     }
 }
