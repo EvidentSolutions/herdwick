@@ -87,11 +87,11 @@ public final class DataGenerator {
                 return new SimpleStringGenerator(min(column.size, 1000));
             case Types.BOOLEAN:
             case Types.BIT:
-                return new SimpleBooleanGenerator();
+                return SimpleGenerators.BOOLEAN;
             case Types.INTEGER:
-                return new SimpleIntegerGenerator();
+                return SimpleGenerators.INTEGER;
             default:
-                throw new IllegalArgumentException("unknown sql-type: " + column.dataType + " (" + column.typeName + ')');
+                throw new IllegalArgumentException("could not find generator for column " + column + " of type: " + column.dataType + " (" + column.typeName + ')');
         }
     }
 }

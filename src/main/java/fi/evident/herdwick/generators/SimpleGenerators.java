@@ -28,13 +28,26 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Random;
 
 /**
- * Generates random integers.
+ * Some simple generators that don't need parametrization.
  */
-final class SimpleIntegerGenerator implements Generator<Integer> {
+final class SimpleGenerators {
 
-    @Nullable
-    @Override
-    public Integer randomValue(@NotNull Random random) {
-        return random.nextInt();
-    }
+    private SimpleGenerators() { }
+
+    static final Generator<Boolean> BOOLEAN = new Generator<Boolean>() {
+        @Nullable
+        @Override
+        public Boolean randomValue(@NotNull Random random) {
+            return random.nextBoolean();
+        }
+    };
+
+    static final Generator<Integer> INTEGER = new Generator<Integer>() {
+        @Nullable
+        @Override
+        public Integer randomValue(@NotNull Random random) {
+            return random.nextInt();
+        }
+    };
+
 }
