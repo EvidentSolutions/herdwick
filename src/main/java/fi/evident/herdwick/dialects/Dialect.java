@@ -25,6 +25,7 @@ package fi.evident.herdwick.dialects;
 import fi.evident.dalesbred.SQL;
 import fi.evident.herdwick.model.Column;
 import fi.evident.herdwick.model.Name;
+import fi.evident.herdwick.model.Table;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -37,4 +38,8 @@ public interface Dialect {
     @SQL
     @NotNull
     String createInsert(@NotNull Name table, @NotNull List<Column> columns);
+
+    @SQL
+    @NotNull
+    String selectAll(@NotNull List<Column> columns, @NotNull Table table);
 }

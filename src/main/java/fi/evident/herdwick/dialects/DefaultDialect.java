@@ -24,9 +24,9 @@ package fi.evident.herdwick.dialects;
 
 import fi.evident.herdwick.model.Column;
 import fi.evident.herdwick.model.Name;
+import fi.evident.herdwick.model.Table;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -35,28 +35,68 @@ import java.util.List;
  */
 public final class DefaultDialect implements Dialect {
 
+    private static final String QUOTE_BEGIN = "\"";
+    private static final String QUOTE_CLOSE = "\"";
+
     @NotNull
     @Override
     public String createInsert(@NotNull Name table, @NotNull List<Column> columns) {
-        StringBuilder qb = new StringBuilder("insert into ").append(table).append(" (");
+        StringBuilder sb = new StringBuilder("insert into ");
+        appendName(sb, table);
+        sb.append(" (");
 
-        for (Iterator<Column> it = columns.iterator(); it.hasNext(); ) {
-            Column column = it.next();
-            qb.append(column.name);
-            if (it.hasNext())
-                qb.append(',');
-        }
+        appendCommaSeparatorColumns(sb, columns);
 
-        qb.append(") values (");
+        sb.append(") values (");
 
-        for (int i = 0; i < columns.size(); i++) {
+        appendCommaSeparatedPlaceholders(sb, columns.size());
+
+        sb.append(')');
+
+        return sb.toString();
+    }
+
+    @NotNull
+    @Override
+    public String selectAll(@NotNull List<Column> columns, @NotNull Table table) {
+        StringBuilder sb = new StringBuilder(100);
+        sb.append("select ");
+
+        appendCommaSeparatorColumns(sb, columns);
+
+        sb.append(" from ");
+
+        appendName(sb, table.getName());
+
+
+        return sb.toString();
+    }
+
+    private static void appendCommaSeparatorColumns(StringBuilder sb, List<Column> columns) {
+        for (int i = 0, size = columns.size(); i < size; i++) {
             if (i != 0)
-                qb.append(',');
-            qb.append('?');
+                sb.append(',');
+            appendName(sb, columns.get(i).name);
         }
+    }
 
-        qb.append(')');
+    private static void appendCommaSeparatedPlaceholders(@NotNull StringBuilder sb, int count) {
+        for (int i = 0; i < count; i++) {
+            if (i != 0)
+                sb.append(',');
+            sb.append('?');
+        }
+    }
 
-        return qb.toString();
+    private static void appendName(@NotNull StringBuilder sb, @NotNull String name) {
+        sb.append(QUOTE_BEGIN).append(name).append(QUOTE_CLOSE);
+    }
+
+    private static void appendName(@NotNull StringBuilder sb, @NotNull Name tableName) {
+        if (tableName.getSchema() != null) {
+            appendName(sb, tableName.getSchema());
+            sb.append('.');
+        }
+        appendName(sb, tableName.getName());
     }
 }

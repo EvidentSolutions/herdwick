@@ -23,6 +23,7 @@
 package fi.evident.herdwick.generators;
 
 import fi.evident.dalesbred.Database;
+import fi.evident.herdwick.dialects.Dialect;
 import fi.evident.herdwick.model.Column;
 import org.jetbrains.annotations.NotNull;
 
@@ -40,12 +41,16 @@ public final class DataGenerator {
     private final Database db;
 
     @NotNull
+    private final Dialect dialect;
+
+    @NotNull
     private final Random random = new Random();
 
     private static final int MAX_SKIPPED_ROWS = 10000;
 
-    public DataGenerator(@NotNull Database db) {
+    public DataGenerator(@NotNull Database db, @NotNull Dialect dialect) {
         this.db = db;
+        this.dialect = dialect;
     }
 
     public void prepare(@NotNull Batch batch) {
@@ -80,7 +85,7 @@ public final class DataGenerator {
     @NotNull
     private Generator<?> generatorFor(Column column) {
         if (column.getReference() != null)
-            return new ReferenceGenerator(db, column);
+            return new ReferenceGenerator(db, dialect, column);
 
         switch (column.dataType) {
             case Types.VARCHAR:

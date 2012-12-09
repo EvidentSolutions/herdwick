@@ -23,13 +23,13 @@
 package fi.evident.herdwick.generators;
 
 import fi.evident.dalesbred.Database;
-import fi.evident.dalesbred.query.QueryBuilder;
+import fi.evident.dalesbred.SQL;
+import fi.evident.herdwick.dialects.Dialect;
 import fi.evident.herdwick.model.Column;
 import fi.evident.herdwick.model.Reference;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -41,21 +41,16 @@ final class ReferenceGenerator implements Generator<Object> {
     @NotNull
     private final List<Object> ids;
 
-    public ReferenceGenerator(@NotNull Database db, @NotNull Column column) {
+    public ReferenceGenerator(@NotNull Database db, @NotNull Dialect dialect, @NotNull Column column) {
         Reference reference = column.getReference();
         if (reference == null)
             throw new IllegalArgumentException("column " + column + " has no foreign key reference");
 
-        QueryBuilder qb = new QueryBuilder();
-        qb.append("select ");
-        for (Iterator<Column> it = reference.getColumns().iterator(); it.hasNext(); ) {
-            qb.append(it.next().name);
-            if (it.hasNext())
-                qb.append(",");
-        }
-        qb.append(" from ").append(reference.getTable().getName().toString());
+        @SQL
+        String sql = dialect.selectAll(reference.getColumns(), reference.getTable());
 
-        ids = db.findAll(Object.class, qb.build());
+        // TODO: if there we multiple columns, return a tuple
+        ids = db.findAll(Object.class, sql);
     }
 
     @Nullable

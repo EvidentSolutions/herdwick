@@ -74,7 +74,7 @@ public final class Populator {
 
     public Populator(@NotNull Database db, @Nullable String defaultSchema) {
         this.db = db;
-        this.dataGenerator = new DataGenerator(db);
+        this.dataGenerator = new DataGenerator(db, dialect);
         this.defaultSchema = defaultSchema;
     }
 
