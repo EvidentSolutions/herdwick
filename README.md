@@ -44,3 +44,8 @@ populator using your `Database`-instance:
     Populator populator = new Populator(db);
 
 Like this you can integrate population with your existing transactions.
+
+# Attributions
+
+Image of herdwick used on the website is by [hollidaypics on Flickr](http://www.flickr.com/photos/83025884@N00/505902438)
+and is used by [CC BY 2.0](http://creativecommons.org/licenses/by/2.0/).
