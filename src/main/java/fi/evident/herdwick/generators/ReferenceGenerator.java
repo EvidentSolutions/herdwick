@@ -51,6 +51,9 @@ final class ReferenceGenerator implements Generator<Object> {
 
         // TODO: if there we multiple columns, return a tuple
         ids = db.findAll(Object.class, sql);
+
+        if (ids.isEmpty())
+            throw new IllegalStateException("Can't construct a generator for column " + column + ", because the referenced table " + reference.getTable().getName() + " contains no rows.");
     }
 
     @Nullable
