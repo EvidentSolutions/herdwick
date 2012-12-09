@@ -1240,6 +1240,7 @@
     <inspection_tool class="MagicConstant" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="MagicNumber" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="ignoreInTestCode" value="true" />
+      <option name="ignoreInitialCapacity" value="true" />
     </inspection_tool>
     <inspection_tool class="MagicNumberJS" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="MalformedFormatString" enabled="true" level="WARNING" enabled_by_default="true" />
