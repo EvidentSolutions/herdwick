@@ -29,6 +29,9 @@
         <module name="herdwick" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="herdwick" target="1.6" />
+    </bytecodeTargetLevel>
   </component>
 </project>
 
