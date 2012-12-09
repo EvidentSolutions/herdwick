@@ -28,7 +28,9 @@ import fi.evident.herdwick.model.Column;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.Types;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import java.util.logging.Logger;
 
 import static java.lang.Math.min;
@@ -60,13 +62,10 @@ public final class DataGenerator {
     public void prepare(@NotNull Batch batch) {
         int discarded = 0;
 
-        Map<Column, Generator<?>> generators = createGenerators(batch);
+        RowGenerator rowGenerator = createRowGenerator(batch.getColumns());
 
         while (!batch.isReady() && discarded < MAX_DISCARDED_ROWS) {
-            List<Object> row = new ArrayList<Object>(batch.getColumns().size());
-
-            for (Column column : batch.getColumns())
-                row.add(generators.get(column).randomValue(random));
+            List<Object> row = rowGenerator.createRow(random);
 
             if (!batch.addRow(row))
                 discarded++;
@@ -77,13 +76,13 @@ public final class DataGenerator {
     }
 
     @NotNull
-    private Map<Column,Generator<?>> createGenerators(@NotNull Batch batch) {
-        Map<Column,Generator<?>> generators = new HashMap<Column, Generator<?>>();
+    private RowGenerator createRowGenerator(@NotNull List<Column> columns) {
+        List<Generator<?>> generators = new ArrayList<Generator<?>>(columns.size());
 
-        for (Column column : batch.getColumns())
-            generators.put(column, generatorFor(column));
+        for (Column column : columns)
+            generators.add(generatorFor(column));
 
-        return generators;
+        return new RowGenerator(generators);
     }
 
     @NotNull
