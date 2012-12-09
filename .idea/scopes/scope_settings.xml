@@ -1,5 +1,6 @@
 <component name="DependencyValidationManager">
   <state>
     <option name="SKIP_IMPORT_STATEMENTS" value="false" />
+    <deny_rule from_scope="All" to_scope="Illegal stuff" is_deny="true" />
   </state>
 </component>
