@@ -25,6 +25,7 @@ package fi.evident.herdwick;
 import fi.evident.dalesbred.Database;
 import fi.evident.dalesbred.junit.TestDatabaseProvider;
 import fi.evident.dalesbred.junit.TransactionalTests;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -131,6 +132,21 @@ public class PopulatorTest {
         populator.populate("table_with_only_two_possible_rows", 3);
 
         assertThat(db.findUniqueInt("select count(*) from table_with_only_two_possible_rows"), is(2));
+    }
+
+    @Test
+    @Ignore("multi-column support is not implemented yet")
+    public void multiColumnKeys() {
+        db.update("drop table if exists bar");
+        db.update("drop table if exists foo");
+
+        db.update("create table foo (x int, y int, primary key (x,y))");
+        db.update("create table bar (id serial primary key, foo_x int, foo_y int, foreign key (foo_x,foo_y) references foo(x,y))");
+
+        populator.populate("foo", 10);
+        populator.populate("bar", 20);
+
+        assertThat(db.findUniqueInt("select count(*) from bar"), is(20));
     }
 
     @Test

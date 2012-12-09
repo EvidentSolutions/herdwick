@@ -49,6 +49,9 @@ final class ReferenceGenerator implements Generator<Object> {
         @SQL
         String sql = dialect.selectAll(reference.getColumns(), reference.getTable());
 
+        if (reference.getColumns().size() != 1)
+            throw new UnsupportedOperationException("multi-column foreign keys are not supported");
+
         // TODO: if there we multiple columns, return a tuple
         ids = db.findAll(Object.class, sql);
 
