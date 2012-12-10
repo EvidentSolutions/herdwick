@@ -63,10 +63,16 @@ public final class Populator {
 
     private boolean batchMode = true;
 
+    /**
+     * Constructs new Populator for given database.
+     */
     public Populator(@NotNull Database db) {
         this(db, "public");
     }
 
+    /**
+     * Constructs new Populator for given database and schema.
+     */
     public Populator(@NotNull Database db, @Nullable String defaultSchema) {
         this.db = db;
         this.dialect = Dialect.detect(db);
@@ -75,21 +81,32 @@ public final class Populator {
         this.defaultSchema = defaultSchema;
     }
 
+    /**
+     * Constructs populator that connects database with given credentials.
+     */
     @NotNull
     public static Populator forUrlAndCredentials(@NotNull String url, @Nullable String username, @Nullable String password) {
         return new Populator(Database.forUrlAndCredentials(url, username, password));
     }
 
+    /**
+     * @see #populate(fi.evident.herdwick.model.Name, int)
+     */
     public int populate(@NotNull String table, int count) {
-        return populate(defaultSchema, table, count);
+        return populate(new Name(defaultSchema, table), count);
     }
 
-    public int populate(@Nullable String schema, @NotNull String table, int count) {
-        return populate(new Name(schema, table), count);
-    }
-
-    public int populate(@NotNull Name tableName, int count) {
-        Batch batch = createBatch(tableName, count);
+    /**
+     * Tries to insert {@code count} rows into {@code table}. Due to uniqueness constraints,
+     * it might not be possible to create the requested amount of rows in which case a warning
+     * is logged and less rows are inserted. Returns the amount of rows actually inserted.
+     *
+     * @param  table to populate
+     * @param  count of rows to insert
+     * @return amount of rows actually inserted
+     */
+    public int populate(@NotNull Name table, int count) {
+        Batch batch = createBatch(table, count);
 
         @SQL
         String insert = dialect.createInsert(batch.getTable().getName(), batch.getColumns());
@@ -115,10 +132,21 @@ public final class Populator {
         return batch;
     }
 
+    /**
+     * Returns whether batch mode is used.
+     *
+     * @see #setBatchMode(boolean)
+     */
     public boolean isBatchMode() {
         return batchMode;
     }
 
+    /**
+     * By default, the populator tries to insert all rows of a populate-call} in a single batch.
+     * This is efficient, but produces less helpful error messages when operation fails. This
+     * method can be used to disable the match mode, in which case individual inserts are performed
+     * for all rows.
+     */
     public void setBatchMode(boolean batchMode) {
         this.batchMode = batchMode;
     }
