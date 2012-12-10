@@ -46,62 +46,79 @@ public final class DefaultDialect extends Dialect {
     @NotNull
     @Override
     public String createInsert(@NotNull Name table, @NotNull List<Column> columns) {
-        StringBuilder sb = new StringBuilder("insert into ");
-        appendName(sb, table);
-        sb.append(" (");
-
-        appendCommaSeparatorColumns(sb, columns);
-
-        sb.append(") values (");
-
-        appendCommaSeparatedPlaceholders(sb, columns.size());
-
-        sb.append(')');
-
-        return sb.toString();
+        SqlBuilder sql = new SqlBuilder();
+        sql.append("insert into ").appendName(table);
+        sql.append(" (").appendCommaSeparatorColumns(columns);
+        sql.append(") values (").appendCommaSeparatedPlaceholders(columns.size()).append(')');
+        return sql.toString();
     }
 
     @NotNull
     @Override
     public String selectAll(@NotNull List<Column> columns, @NotNull Table table) {
-        StringBuilder sb = new StringBuilder(100);
-        sb.append("select ");
-
-        appendCommaSeparatorColumns(sb, columns);
-
-        sb.append(" from ");
-
-        appendName(sb, table.getName());
-
-        return sb.toString();
+        SqlBuilder sql = new SqlBuilder();
+        sql.append("select ").appendCommaSeparatorColumns(columns).append(" from ").appendName(table.getName());
+        return sql.toString();
     }
 
-    private static void appendCommaSeparatorColumns(@NotNull StringBuilder sb, @NotNull List<Column> columns) {
-        for (int i = 0, size = columns.size(); i < size; i++) {
-            if (i != 0)
-                sb.append(',');
-            appendName(sb, columns.get(i).getName());
+    private static final class SqlBuilder {
+
+        @NotNull
+        private final StringBuilder sql = new StringBuilder(100);
+
+        @Override
+        @NotNull
+        public String toString() {
+            return sql.toString();
         }
-    }
 
-    private static void appendCommaSeparatedPlaceholders(@NotNull StringBuilder sb, int count) {
-        for (int i = 0; i < count; i++) {
-            if (i != 0)
-                sb.append(',');
-            sb.append('?');
+        @NotNull
+        SqlBuilder append(@NotNull String s) {
+            sql.append(s);
+            return this;
         }
-    }
 
-    private static void appendName(@NotNull StringBuilder sb, @NotNull String name) {
-        sb.append('"').append(name).append('"');
-    }
-
-    private static void appendName(@NotNull StringBuilder sb, @NotNull Name tableName) {
-        String schema = tableName.getSchema();
-        if (schema != null) {
-            appendName(sb, schema);
-            sb.append('.');
+        @NotNull
+        SqlBuilder append(char c) {
+            sql.append(c);
+            return this;
         }
-        appendName(sb, tableName.getName());
+
+        @NotNull
+        SqlBuilder appendCommaSeparatorColumns(@NotNull List<Column> columns) {
+            for (int i = 0, size = columns.size(); i < size; i++) {
+                if (i != 0)
+                    sql.append(',');
+                appendName(columns.get(i).getName());
+            }
+            return this;
+        }
+
+        @NotNull
+        SqlBuilder appendCommaSeparatedPlaceholders(int count) {
+            for (int i = 0; i < count; i++) {
+                if (i != 0)
+                    sql.append(',');
+                sql.append('?');
+            }
+            return this;
+        }
+
+        @NotNull
+        SqlBuilder appendName(@NotNull String name) {
+            sql.append('"').append(name).append('"');
+            return this;
+        }
+
+        @NotNull
+        SqlBuilder appendName(@NotNull Name tableName) {
+            String schema = tableName.getSchema();
+            if (schema != null) {
+                appendName(schema);
+                sql.append('.');
+            }
+            appendName(tableName.getName());
+            return this;
+        }
     }
 }
