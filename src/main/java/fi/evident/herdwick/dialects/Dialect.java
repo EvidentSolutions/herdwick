@@ -22,6 +22,7 @@
 
 package fi.evident.herdwick.dialects;
 
+import fi.evident.dalesbred.Database;
 import fi.evident.dalesbred.SQL;
 import fi.evident.herdwick.model.Column;
 import fi.evident.herdwick.model.Name;
@@ -33,13 +34,22 @@ import java.util.List;
 /**
  * Generates SQL statements that populator needs.
  */
-public interface Dialect {
+public abstract class Dialect {
 
     @SQL
     @NotNull
-    String createInsert(@NotNull Name table, @NotNull List<Column> columns);
+    public abstract String createInsert(@NotNull Name table, @NotNull List<Column> columns);
 
     @SQL
     @NotNull
-    String selectAll(@NotNull List<Column> columns, @NotNull Table table);
+    public abstract String selectAll(@NotNull List<Column> columns, @NotNull Table table);
+
+    @NotNull
+    public abstract MetadataProvider getMetadataProvider();
+
+    @NotNull
+    @SuppressWarnings("UnusedParameters")
+    public static Dialect detect(@NotNull Database db) {
+        return new DefaultDialect();
+    }
 }

@@ -33,7 +33,15 @@ import java.util.List;
  * A default implementation of {@link Dialect} that should be fine
  * for most databases.
  */
-public final class DefaultDialect implements Dialect {
+public final class DefaultDialect extends Dialect {
+
+    private final MetadataProvider metadataProvider = new JdbcMetadataProvider();
+
+    @NotNull
+    @Override
+    public MetadataProvider getMetadataProvider() {
+        return metadataProvider;
+    }
 
     @NotNull
     @Override

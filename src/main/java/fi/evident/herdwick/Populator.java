@@ -23,9 +23,7 @@
 package fi.evident.herdwick;
 
 import fi.evident.dalesbred.*;
-import fi.evident.herdwick.dialects.DefaultDialect;
 import fi.evident.herdwick.dialects.Dialect;
-import fi.evident.herdwick.dialects.JdbcMetadataProvider;
 import fi.evident.herdwick.dialects.MetadataProvider;
 import fi.evident.herdwick.generators.Batch;
 import fi.evident.herdwick.generators.DataGenerator;
@@ -55,10 +53,10 @@ public final class Populator {
     private final DataGenerator dataGenerator;
 
     @NotNull
-    private final MetadataProvider metadataProvider = new JdbcMetadataProvider();
+    private final Dialect dialect;
 
     @NotNull
-    private final Dialect dialect = new DefaultDialect();
+    private final MetadataProvider metadataProvider;
 
     @Nullable
     private TableCollection tables;
@@ -71,6 +69,8 @@ public final class Populator {
 
     public Populator(@NotNull Database db, @Nullable String defaultSchema) {
         this.db = db;
+        this.dialect = Dialect.detect(db);
+        this.metadataProvider = dialect.getMetadataProvider();
         this.dataGenerator = new DataGenerator(db, dialect);
         this.defaultSchema = defaultSchema;
     }
