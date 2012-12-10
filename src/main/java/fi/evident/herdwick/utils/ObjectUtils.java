@@ -22,6 +22,7 @@
 
 package fi.evident.herdwick.utils;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -30,6 +31,14 @@ import org.jetbrains.annotations.Nullable;
 public final class ObjectUtils {
 
     private ObjectUtils() { }
+
+    @NotNull
+    @SuppressWarnings("ConstantConditions")
+    public static <T> T requireNonNull(@NotNull T object) {
+        if (object == null) throw new NullPointerException();
+
+        return object;
+    }
 
     public static boolean nullSafeEquals(@Nullable Object left, @Nullable Object right) {
         return (left == null) ? right == null : left.equals(right);

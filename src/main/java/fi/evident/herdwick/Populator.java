@@ -37,6 +37,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import static fi.evident.dalesbred.SqlQuery.query;
+import static fi.evident.herdwick.utils.ObjectUtils.requireNonNull;
 
 /**
  * Facade for the functionality of the application.
@@ -74,7 +75,7 @@ public final class Populator {
      * Constructs new Populator for given database and schema.
      */
     public Populator(@NotNull Database db, @Nullable String defaultSchema) {
-        this.db = db;
+        this.db = requireNonNull(db);
         this.dialect = Dialect.detect(db);
         this.metadataProvider = dialect.getMetadataProvider();
         this.dataGenerator = new DataGenerator(db, dialect);
@@ -106,7 +107,7 @@ public final class Populator {
      * @return amount of rows actually inserted
      */
     public int populate(@NotNull Name table, int count) {
-        Batch batch = createBatch(table, count);
+        Batch batch = createBatch(requireNonNull(table), count);
 
         @SQL
         String insert = dialect.createInsert(batch.getTable().getName(), batch.getColumns());
