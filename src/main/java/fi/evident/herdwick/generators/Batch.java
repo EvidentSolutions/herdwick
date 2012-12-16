@@ -25,13 +25,12 @@ package fi.evident.herdwick.generators;
 import fi.evident.dalesbred.ResultTable;
 import fi.evident.herdwick.model.Column;
 import fi.evident.herdwick.model.Table;
-import fi.evident.herdwick.model.UniqueConstraint;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static fi.evident.herdwick.utils.ObjectUtils.nullSafeEquals;
+import static fi.evident.herdwick.generators.UniqueConstraintVerifier.createUniqueConstraintVerifiers;
 import static java.util.Collections.unmodifiableList;
 
 /**
@@ -43,30 +42,34 @@ public final class Batch {
     private final Table table;
 
     @NotNull
-    private final ResultTable existingData;
+    private final List<List<?>> existingRows;
 
     @NotNull
-    private final List<List<?>> data = new ArrayList<List<?>>();
+    private final List<List<?>> rowsToInsert = new ArrayList<List<?>>();
 
     @NotNull
     private final List<Column> columns;
     private final int requestedSize;
 
+    @NotNull
+    private final List<UniqueConstraintVerifier> uniqueConstraintVerifiers;
+
     public Batch(@NotNull Table table, @NotNull ResultTable existingData, int requestedSize) {
         this.table = table;
-        this.existingData = existingData;
+        this.existingRows = resultTableToList(existingData);
         this.requestedSize = requestedSize;
         this.columns = table.getNonAutoIncrementColumns();
+        this.uniqueConstraintVerifiers = createUniqueConstraintVerifiers(table, columns);
     }
 
     @NotNull
     public List<? extends List<?>> rowsToInsert() {
-        return data;
+        return rowsToInsert;
     }
 
     public boolean addRow(@NotNull List<?> row) {
         if (satisfiesUniqueConstraints(row)) {
-            data.add(row);
+            rowsToInsert.add(row);
             return true;
         } else {
             return false;
@@ -74,49 +77,19 @@ public final class Batch {
     }
 
     private boolean satisfiesUniqueConstraints(@NotNull List<?> row) {
-        for (UniqueConstraint constraint : table.getUniqueConstraints())
-            if (!satisfiesUniqueConstraint(constraint, row))
+        for (UniqueConstraintVerifier verifier : uniqueConstraintVerifiers)
+            if (!verifier.satisfies(existingRows, rowsToInsert, row))
                 return false;
 
-        return true;
-    }
-
-    private boolean satisfiesUniqueConstraint(@NotNull UniqueConstraint constraint, @NotNull List<?> row) {
-        // If this constraint is for a column that we're not generating in this batch
-        // (e.g. constraint for auto-generated primary key), we're not interested.
-        if (!columns.containsAll(constraint.getColumns()))
-            return true;
-
-        int[] columnIndices = columnIndicesFor(constraint);
-
-        for (ResultTable.ResultRow existingRow : existingData.getRows())
-            if (matches(existingRow.asList(), row, columnIndices))
-                return false;
-
-        for (List<?> existingRow : data)
-            if (matches(existingRow, row, columnIndices))
-                return false;
-
-        return true;
-    }
-
-    private static boolean matches(@NotNull List<?> row1, @NotNull List<?> row2, @NotNull int[] indices) {
-        for (int index : indices)
-            if (!nullSafeEquals(row1.get(index), row2.get(index)))
-                return false;
         return true;
     }
 
     @NotNull
-    private int[] columnIndicesFor(@NotNull UniqueConstraint constraint) {
-        List<Column> constraintColumns = constraint.getColumns();
-        int[] indices = new int[constraintColumns.size()];
-
-        int i = 0;
-        for (Column column : constraintColumns)
-            indices[i++] = columns.indexOf(column);
-
-        return indices;
+    private static List<List<?>> resultTableToList(@NotNull ResultTable table) {
+        List<List<?>> result = new ArrayList<List<?>>(table.getRowCount());
+        for (ResultTable.ResultRow row : table.getRows())
+            result.add(row.asList());
+        return result;
     }
 
     public int getRequestedSize() {
@@ -124,11 +97,11 @@ public final class Batch {
     }
 
     public int getCurrentSize() {
-        return data.size();
+        return rowsToInsert.size();
     }
 
     public boolean isReady() {
-        return data.size() >= requestedSize;
+        return rowsToInsert.size() >= requestedSize;
     }
 
     @NotNull
