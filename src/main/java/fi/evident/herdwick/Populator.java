@@ -27,6 +27,7 @@ import fi.evident.herdwick.dialects.Dialect;
 import fi.evident.herdwick.dialects.MetadataProvider;
 import fi.evident.herdwick.generators.Batch;
 import fi.evident.herdwick.generators.DataGenerator;
+import fi.evident.herdwick.generators.Generator;
 import fi.evident.herdwick.model.Name;
 import fi.evident.herdwick.model.Table;
 import fi.evident.herdwick.model.TableCollection;
@@ -131,6 +132,20 @@ public final class Populator {
         dataGenerator.prepare(batch);
 
         return batch;
+    }
+
+    /**
+     * @see #registerGeneratorForColumn(fi.evident.herdwick.model.Name, String, fi.evident.herdwick.generators.Generator)
+     */
+    public void registerGeneratorForColumn(@NotNull String table, @NotNull String column, @NotNull Generator<?> generator) {
+        registerGeneratorForColumn(new Name(defaultSchema, table), column, generator);
+    }
+
+    /**
+     * Registers generator that will be used for given column instead of the automatically determined generator.
+     */
+    public void registerGeneratorForColumn(@NotNull Name table, @NotNull String column, @NotNull Generator<?> generator) {
+        getTables().getTable(table).getColumn(column).setGenerator(generator);
     }
 
     /**
