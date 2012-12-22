@@ -26,6 +26,7 @@ import fi.evident.dalesbred.Database;
 import fi.evident.herdwick.dialects.Dialect;
 import fi.evident.herdwick.model.Column;
 import fi.evident.herdwick.model.Reference;
+import fi.evident.herdwick.model.Table;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -62,7 +63,7 @@ public final class DataGenerator {
     public void prepare(@NotNull Batch batch) {
         int discarded = 0;
 
-        RowGenerator rowGenerator = createRowGenerator(batch.getColumns());
+        RowGenerator rowGenerator = createRowGenerator(batch.getTable(), batch.getColumns());
 
         while (!batch.isReady() && discarded < MAX_DISCARDED_ROWS) {
             List<Object> row = rowGenerator.createRow(random);
@@ -76,19 +77,27 @@ public final class DataGenerator {
     }
 
     @NotNull
-    private RowGenerator createRowGenerator(@NotNull List<Column> columns) {
-        List<ColumnSetGenerator> generators = createGenerators(columns);
+    private RowGenerator createRowGenerator(@NotNull Table table, @NotNull List<Column> columns) {
+        List<ColumnSetGenerator> generators = createGenerators(table, columns);
 
         return new RowGenerator(columns.size(), generators);
     }
 
     @NotNull
-    private List<ColumnSetGenerator> createGenerators(@NotNull List<Column> columns) {
+    private List<ColumnSetGenerator> createGenerators(@NotNull Table table, @NotNull List<Column> columns) {
         WorkList workList = new WorkList(columns);
 
         List<ColumnSetGenerator> generators = new ArrayList<ColumnSetGenerator>(columns.size());
 
-        // First go through all the foreign keys and try to build generators for them
+        // First go through all the explicitly registered column set generators
+        for (Map.Entry<List<Column>,Generator<List<?>>> entry : table.getGenerators().entrySet()) {
+            List<Column> generatorColumns = entry.getKey();
+            int[] indices = workList.tryRemoveColumnsAndReturnIndices(generatorColumns);
+            if (indices != null)
+                generators.add(new MultiColumnColumnSetGenerator(indices, entry.getValue()));
+        }
+
+        // Go through all the foreign keys and try to build generators for them
         while (true) {
             ColumnSetGenerator referenceGenerator = extractReferenceGenerator(workList);
             if (referenceGenerator != null)
@@ -157,25 +166,34 @@ public final class DataGenerator {
                 workList.add(new IndexedColumn(i, columns.get(i)));
         }
 
-        @NotNull
-        int[] removeColumnsAndReturnIndices(@NotNull List<Column> removedColumns) {
+        @Nullable
+        int[] tryRemoveColumnsAndReturnIndices(@NotNull List<Column> removedColumns) {
             int[] indices = new int[removedColumns.size()];
             int index = 0;
 
-            for (Column removedColumn : removedColumns) {
-                for (Iterator<IndexedColumn> it = workList.iterator(); it.hasNext(); ) {
-                    IndexedColumn column = it.next();
-                    if (column.column.equals(removedColumn)) {
+            for (Column removedColumn : removedColumns)
+                for (IndexedColumn column : workList)
+                    if (column.column.equals(removedColumn))
                         indices[index++] = column.index;
+
+            if (index == removedColumns.size()) {
+                for (Iterator<IndexedColumn> it = workList.iterator(); it.hasNext(); )
+                    if (removedColumns.contains(it.next().column))
                         it.remove();
-                    }
-                }
+
+                return indices;
+            } else {
+                return null;
             }
+        }
 
-            if (index != removedColumns.size())
+        @NotNull
+        int[] removeColumnsAndReturnIndices(@NotNull List<Column> removedColumns) {
+            int[] indices = tryRemoveColumnsAndReturnIndices(removedColumns);
+            if (indices != null)
+                return indices;
+            else
                 throw new RuntimeException("could not find all required columns " + removedColumns + " in work-list");
-
-            return indices;
         }
 
         @NotNull

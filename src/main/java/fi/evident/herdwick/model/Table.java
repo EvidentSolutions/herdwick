@@ -22,15 +22,13 @@
 
 package fi.evident.herdwick.model;
 
+import fi.evident.herdwick.generators.Generator;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
-import static java.util.Collections.unmodifiableCollection;
-import static java.util.Collections.unmodifiableList;
+import static java.util.Collections.*;
 
 /**
  * Represents a table in the database.
@@ -48,6 +46,9 @@ public final class Table {
 
     @NotNull
     private final List<Reference> foreignKeys = new ArrayList<Reference>();
+
+    @NotNull
+    private final Map<List<Column>, Generator<List<?>>> generators = new HashMap<List<Column>, Generator<List<?>>>();
 
     Table(@NotNull Name name) {
         this.name = name;
@@ -117,5 +118,22 @@ public final class Table {
 
     public void addForeignKey(@NotNull Reference reference) {
         foreignKeys.add(reference);
+    }
+
+    @NotNull
+    public Map<List<Column>, Generator<List<?>>> getGenerators() {
+        return unmodifiableMap(generators);
+    }
+
+    public void registerGenerator(@NotNull List<String> columnNames, @NotNull Generator<List<?>> generator) {
+        if (columns.isEmpty()) throw new IllegalArgumentException("no columns");
+
+        // TODO: check for duplicate columns or columns overlapping with existing generators
+
+        List<Column> generatorColumns = new ArrayList<Column>(columnNames.size());
+        for (String columnName : columnNames)
+            generatorColumns.add(getColumn(columnName));
+
+        generators.put(generatorColumns, generator);
     }
 }

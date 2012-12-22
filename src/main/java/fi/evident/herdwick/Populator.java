@@ -149,6 +149,20 @@ public final class Populator {
     }
 
     /**
+     * @see #registerGeneratorForColumns(fi.evident.herdwick.model.Name, java.util.List, fi.evident.herdwick.generators.Generator)
+     */
+    public void registerGeneratorForColumns(@NotNull String table, @NotNull List<String> columns, @NotNull Generator<List<?>> generator) {
+        registerGeneratorForColumns(new Name(defaultSchema, table), columns, generator);
+    }
+
+    /**
+     * Registers a generator that will be used to generate value for the given set of columns.
+     */
+    public void registerGeneratorForColumns(@NotNull Name table, @NotNull List<String> columns, @NotNull Generator<List<?>> generator) {
+        getTables().getTable(table).registerGenerator(columns, generator);
+    }
+
+    /**
      * Returns whether batch mode is used.
      *
      * @see #setBatchMode(boolean)
