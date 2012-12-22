@@ -6,11 +6,11 @@
 - custom row verifiers in the sense of UniqueConstraintVerifiers
 - builtin ColumnSetGenerators for generating ordered pairs (e.g. start_date vs end_date)
 - nice builtin generators for different scenarios
-  - names
-  - urls
-  - emails
-  - ranged numbers
-  - constrained dates
+    - names
+    - urls
+    - emails
+    - ranged numbers
+    - constrained dates
 - registering generators for all matching column names
 
 
