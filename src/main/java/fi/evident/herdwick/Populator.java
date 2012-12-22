@@ -36,9 +36,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Random;
 
 import static fi.evident.dalesbred.SqlQuery.query;
 import static fi.evident.herdwick.utils.ObjectUtils.requireNonNull;
+import static java.util.Collections.singletonList;
 
 /**
  * Facade for the functionality of the application.
@@ -144,8 +146,14 @@ public final class Populator {
     /**
      * Registers generator that will be used for given column instead of the automatically determined generator.
      */
-    public void registerGeneratorForColumn(@NotNull Name table, @NotNull String column, @NotNull Generator<?> generator) {
-        getTables().getTable(table).getColumn(column).setGenerator(generator);
+    public void registerGeneratorForColumn(@NotNull Name table, @NotNull String column, @NotNull final Generator<?> generator) {
+        registerGeneratorForColumns(table, singletonList(column), new Generator<List<?>>() {
+            @Nullable
+            @Override
+            public List<?> randomValue(@NotNull Random random) {
+                return singletonList(generator.randomValue(random));
+            }
+        });
     }
 
     /**

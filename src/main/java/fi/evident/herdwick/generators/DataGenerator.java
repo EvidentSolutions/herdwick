@@ -128,10 +128,6 @@ public final class DataGenerator {
 
     @NotNull
     private static Generator<?> generatorFor(@NotNull Column column) {
-        Generator<?> generator = column.getGenerator();
-        if (generator != null)
-            return generator;
-
         switch (column.getDataType()) {
             case Types.VARCHAR:
                 return new SimpleStringGenerator(min(column.getSize(), 1000));

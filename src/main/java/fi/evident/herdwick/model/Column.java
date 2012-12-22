@@ -22,9 +22,7 @@
 
 package fi.evident.herdwick.model;
 
-import fi.evident.herdwick.generators.Generator;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Represents a column of a {@link Table}.
@@ -46,9 +44,6 @@ public final class Column {
 
     private int size;
     private int decimalDigits;
-
-    @Nullable
-    private Generator<?> generator;
 
     Column(@NotNull Table table, @NotNull String name) {
         this.table = table;
@@ -119,14 +114,5 @@ public final class Column {
 
     public void setNullable(boolean nullable) {
         this.nullable = nullable;
-    }
-
-    public void setGenerator(@Nullable Generator<?> generator) {
-        this.generator = generator;
-    }
-
-    @Nullable
-    public Generator<?> getGenerator() {
-        return generator;
     }
 }
