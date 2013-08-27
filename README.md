@@ -7,6 +7,8 @@ the Old Norse herdvyck, meaning sheep pasture.
 Herdwick is also a library for easily populating databases with dummy data. It analyses database schema
 for foreign key references and other constraints to make generation of data as painless as possible.
 
+[![Build Status](https://drone.io/bitbucket.org/evidentsolutions/herdwick/status.png)](https://drone.io/bitbucket.org/evidentsolutions/herdwick/latest)
+
 ## Example
 
 Consider the following database schema:
